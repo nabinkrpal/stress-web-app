@@ -4,10 +4,8 @@ sqlalchemy
 pymysql
 python-dotenv
 python-jose
-pandas
-numpy
-opencv-python-headless
-deepface==0.0.79
+numpy==1.23.5
+pandas==1.5.3
 tensorflow==2.10.0
-passlib[argon2]
-python-multipart
+deepface==0.0.79
+opencv-python-headless==4.7.0.72
