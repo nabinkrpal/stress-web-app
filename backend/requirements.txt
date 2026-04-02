@@ -8,6 +8,6 @@ pandas
 numpy
 opencv-python-headless
 deepface==0.0.79
-tensorflow-cpu==2.10.0
+tensorflow=2.10.0
 passlib[argon2]
 python-multipart
