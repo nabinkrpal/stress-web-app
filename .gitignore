@@ -1,0 +1,22 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.env
+*.db
+
+# Backend uploads
+
+
+# ML data (optional if large)
+ml/data/
+
+# Node
+stress-frontend/node_modules/
+stress-frontend/build/
+stress-frontend/coverage/
+stress-frontend/.pnp
+stress-frontend/.pnp.js
+
+# OS
+.DS_Store
