@@ -1,28 +1,20 @@
 fastapi
 uvicorn
 
-# Database
 sqlalchemy
 pymysql
 
-# Auth & Security
 python-jose
 passlib[bcrypt]
 
-# Env
 python-dotenv
-
-# ML & Data
 numpy==1.23.5
 pandas==1.5.3
 joblib
 
-# Deep Learning (IMPORTANT versions)
 tensorflow==2.10.0
 deepface==0.0.79
+scikit-learn==1.3.2
 
-# Computer Vision
 opencv-python-headless==4.7.0.72
-
-# File upload support (FastAPI needs this)
 python-multipart
