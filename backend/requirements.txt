@@ -6,7 +6,9 @@ python-dotenv
 passlib[argon2]
 python-jose
 pandas
-joblib
-deepface
-opencv-python-headless
 numpy
+opencv-python-headless
+deepface==0.0.79
+tensorflow==2.10.0
+keras==2.10.0
+joblib
