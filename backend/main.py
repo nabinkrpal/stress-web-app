@@ -60,8 +60,8 @@ pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 # ================= ML MODEL =================
 
-model = joblib.load("../ml/stress_model.pkl")
-label_encoder = joblib.load("../ml/label_encoder.pkl")
+model = joblib.load("stress_model.pkl")
+label_encoder = joblib.load("label_encoder.pkl")
 
 
 # ================= DATABASE =================
