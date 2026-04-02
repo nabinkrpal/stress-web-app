@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://192.168.1.19:8000",
+  baseURL: "https://stress-web.onrender.com",
 });
 
 // Add token automatically
@@ -14,3 +14,4 @@ API.interceptors.request.use((req) => {
 });
 
 export default API;
+
