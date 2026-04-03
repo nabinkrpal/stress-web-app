@@ -130,8 +130,9 @@ def send_email(to_email, subject, body):
 #     except Exception as e:
 #         print("Email Error:", e)  # ⚠️ don't crash server
 
+
 def send_verification_email(email, user_id):
-    link = f"http://192.168.1.19:8000/verify-email/{user_id}"
+    link = f"https://stress-web.onrender.com/verify-email/{user_id}"
     send_email(email, "Verify Account", f"Click to verify:\n{link}")
 
 def send_otp_email(email, otp):
