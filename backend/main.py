@@ -101,13 +101,13 @@ class ResetPasswordSchema(BaseModel):
 def send_email(to_email, subject, body):
     try:
         message = Mail(
-            from_email=EMAIL_FROM,
+            from_email=SENGRID_MAIL,
             to_emails=to_email,
             subject=subject,
             plain_text_content=body,
         )
 
-        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        sg = SendGridAPIClient(SENDGRID_API)
         response = sg.send(message)
 
         print("Email sent:", response.status_code)
