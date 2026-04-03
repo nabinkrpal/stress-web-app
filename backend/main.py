@@ -98,22 +98,37 @@ class ResetPasswordSchema(BaseModel):
     new_password: str
 
 # ================= EMAIL =================
-
 def send_email(to_email, subject, body):
     try:
-        msg = MIMEText(body)
-        msg["Subject"] = subject
-        msg["From"] = EMAIL_USER
-        msg["To"] = to_email
+        message = Mail(
+            from_email=EMAIL_FROM,
+            to_emails=to_email,
+            subject=subject,
+            plain_text_content=body,
+        )
 
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(EMAIL_USER, EMAIL_PASS)
-        server.send_message(msg)
-        server.quit()
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+
+        print("Email sent:", response.status_code)
 
     except Exception as e:
-        print("Email Error:", e)  # ⚠️ don't crash server
+        print("Email Error:", str(e))
+# def send_email(to_email, subject, body):
+#     try:
+#         msg = MIMEText(body)
+#         msg["Subject"] = subject
+#         msg["From"] = EMAIL_USER
+#         msg["To"] = to_email
+
+#         server = smtplib.SMTP("smtp.gmail.com", 587)
+#         server.starttls()
+#         server.login(EMAIL_USER, EMAIL_PASS)
+#         server.send_message(msg)
+#         server.quit()
+
+#     except Exception as e:
+#         print("Email Error:", e)  # ⚠️ don't crash server
 
 def send_verification_email(email, user_id):
     link = f"http://192.168.1.19:8000/verify-email/{user_id}"
