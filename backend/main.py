@@ -9,6 +9,8 @@ import pandas as pd
 import random
 import smtplib
 from email.mime.text import MIMEText
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 import os
 from dotenv import load_dotenv
 
@@ -36,9 +38,9 @@ UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
+SENGRID_API = os.getenv("SENGRID_API")
+SENGRID_MAIL = os.getenv("SENGRID_MAIL")
 
-EMAIL_USER = os.getenv("EMAIL_USER")
-EMAIL_PASS = os.getenv("EMAIL_PASS")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
