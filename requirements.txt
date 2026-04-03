@@ -4,6 +4,7 @@ uvicorn
 # Database
 sqlalchemy
 pymysql
+argon2-cffi
 
 # Auth & Security
 python-jose
