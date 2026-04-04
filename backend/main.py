@@ -38,6 +38,11 @@ UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
+
+# 🔥 Force DeepFace to use your local weights folder
+os.environ["DEEPFACE_HOME"] = os.path.abspath(".deepface")
+
+
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 EMAIL_FROM = os.getenv("EMAIL_FROM")
 
@@ -114,21 +119,6 @@ def send_email(to_email, subject, body):
 
     except Exception as e:
         print("Email Error:", str(e))
-# def send_email(to_email, subject, body):
-#     try:
-#         msg = MIMEText(body)
-#         msg["Subject"] = subject
-#         msg["From"] = EMAIL_USER
-#         msg["To"] = to_email
-
-#         server = smtplib.SMTP("smtp.gmail.com", 587)
-#         server.starttls()
-#         server.login(EMAIL_USER, EMAIL_PASS)
-#         server.send_message(msg)
-#         server.quit()
-
-#     except Exception as e:
-#         print("Email Error:", e)  # ⚠️ don't crash server
 
 
 def send_verification_email(email, user_id):
