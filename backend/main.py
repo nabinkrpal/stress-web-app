@@ -478,11 +478,6 @@ os.environ["DEEPFACE_HOME"] = BASE_DIR
 print("DeepFace HOME:", os.environ["DEEPFACE_HOME"])
 print("Expected weights path:", os.path.join(os.environ["DEEPFACE_HOME"], ".deepface", "weights"))
 
-# 🔥 DEBUG (remove later)
-print("DeepFace Path:", DEEPFACE_DIR)
-if os.path.exists(os.path.join(DEEPFACE_DIR, "weights")):
-    print("Weights:", os.listdir(os.path.join(DEEPFACE_DIR, "weights")))
-
 # 🔥 ENV VARIABLES
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 EMAIL_FROM = os.getenv("EMAIL_FROM")
