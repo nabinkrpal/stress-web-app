@@ -475,6 +475,8 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 # 🔥 DeepFace LOCAL WEIGHTS FIX
 os.environ["DEEPFACE_HOME"] = BASE_DIR
+print("DeepFace HOME:", os.environ["DEEPFACE_HOME"])
+print("Expected weights path:", os.path.join(os.environ["DEEPFACE_HOME"], ".deepface", "weights"))
 
 # 🔥 DEBUG (remove later)
 print("DeepFace Path:", DEEPFACE_DIR)
