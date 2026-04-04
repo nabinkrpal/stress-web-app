@@ -777,6 +777,18 @@ def reset_password(data: ResetPasswordSchema, db: Session = Depends(get_db)):
 
     return {"message": "Password reset successful"}
 
+@app.delete("/deactivate-account")
+def deactivate(user=Depends(get_current_user), db: Session = Depends(get_db)):
+
+    user.email = f"deleted_{user.id}@anon.com"
+    user.name = "Deleted User"
+    user.password = ""
+    user.is_verified = False
+
+    db.commit()
+
+    return {"message": "Account deactivated"}
+
 # -------- WEBCAM STRESS --------
 
 @app.post("/webcam-stress")
