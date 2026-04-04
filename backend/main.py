@@ -38,8 +38,8 @@ UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-SENGRID_API = os.getenv("SENGRID_API")
-SENGRID_MAIL = os.getenv("SENGRID_MAIL")
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+EMAIL_FROM = os.getenv("EMAIL_FROM")
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -101,13 +101,13 @@ class ResetPasswordSchema(BaseModel):
 def send_email(to_email, subject, body):
     try:
         message = Mail(
-            from_email=SENGRID_MAIL,
+            from_email=EMAIL_FROM,
             to_emails=to_email,
             subject=subject,
             plain_text_content=body,
         )
 
-        sg = SendGridAPIClient(SENDGRID_API)
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
 
         print("Email sent:", response.status_code)
