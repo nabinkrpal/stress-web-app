@@ -175,7 +175,7 @@ function History() {
                       {/* IMAGE */}
                       {item.image && (
                         <img
-                          src={`https://stress-web.onrender.com/${item.image}`}
+                          src={`https://stress-web-app.vercel.app/${item.image}`}
                           alt="Captured"
                           className="w-40 h-28 object-cover rounded mb-2 border"
                         />
