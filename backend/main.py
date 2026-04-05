@@ -7,17 +7,17 @@
 # import joblib
 # import pandas as pd
 # import random
-# import smtplib
-# from email.mime.text import MIMEText
-# from sendgrid import SendGridAPIClient
-# from sendgrid.helpers.mail import Mail
 # import os
 # from dotenv import load_dotenv
 
+# # 🔥 SendGrid
+# from sendgrid import SendGridAPIClient
+# from sendgrid.helpers.mail import Mail
+
+# # 🔥 DeepFace
 # from deepface import DeepFace
 # import numpy as np
 # import cv2
-# from fastapi import UploadFile, File
 
 # from database import engine, SessionLocal
 # import models
@@ -28,27 +28,31 @@
 
 # # ================= INIT =================
 
-
 # load_dotenv()
 # models.Base.metadata.create_all(bind=engine)
 
 # app = FastAPI()
 
-# UPLOAD_DIR = "uploads"
+# # 🔥 BASE DIR FIX (IMPORTANT FOR RENDER)
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# # 🔥 Uploads
+# UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 # os.makedirs(UPLOAD_DIR, exist_ok=True)
-# app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+# app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
+# # 🔥 DeepFace LOCAL WEIGHTS FIX
+# os.environ["DEEPFACE_HOME"] = BASE_DIR
+# print("DeepFace HOME:", os.environ["DEEPFACE_HOME"])
+# print("Expected weights path:", os.path.join(os.environ["DEEPFACE_HOME"], ".deepface", "weights"))
 
-# # 🔥 Force DeepFace to use your local weights folder
-# os.environ["DEEPFACE_HOME"] = os.path.abspath(".deepface")
-
-
+# # 🔥 ENV VARIABLES
 # SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 # EMAIL_FROM = os.getenv("EMAIL_FROM")
 
-
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
+# # 🔥 CORS
 # app.add_middleware(
 #     CORSMiddleware,
 #     allow_origins=["https://stress-web-app.vercel.app"],
@@ -67,9 +71,8 @@
 
 # # ================= ML MODEL =================
 
-# model = joblib.load("stress_model.pkl")
-# label_encoder = joblib.load("label_encoder.pkl")
-
+# model = joblib.load(os.path.join(BASE_DIR, "stress_model.pkl"))
+# label_encoder = joblib.load(os.path.join(BASE_DIR, "label_encoder.pkl"))
 
 # # ================= DATABASE =================
 
@@ -103,6 +106,7 @@
 #     new_password: str
 
 # # ================= EMAIL =================
+
 # def send_email(to_email, subject, body):
 #     try:
 #         message = Mail(
@@ -125,8 +129,10 @@
 #     link = f"https://stress-web.onrender.com/verify-email/{user_id}"
 #     send_email(email, "Verify Account", f"Click to verify:\n{link}")
 
+
 # def send_otp_email(email, otp):
 #     send_email(email, "OTP Code", f"Your OTP is {otp} (valid 5 min)")
+
 
 # def generate_otp():
 #     return str(random.randint(100000, 999999))
@@ -230,13 +236,13 @@
 #     df = pd.DataFrame([data.dict()])
 #     pred = model.predict(df)
 #     label = label_encoder.inverse_transform(pred)[0]
+
 #     record = models.StressRecord(
 #         **data.dict(),
 #         predicted_stress=label,
 #         user_id=user.id,
 #         source="form"
 #     )
-#     # record = models.StressRecord(**data.dict(), predicted_stress=label, user_id=user.id)
 
 #     db.add(record)
 #     db.commit()
@@ -245,6 +251,7 @@
 #     return {"predicted_stress": label, "timestamp": record.created_at}
 
 # # -------- HISTORY --------
+
 # @app.get("/history")
 # def history(user=Depends(get_current_user), db: Session = Depends(get_db)):
 
@@ -256,16 +263,13 @@
 #     response = []
 
 #     for r in records:
-
-#         # 🔥 COMMON DATA
 #         base_data = {
 #             "id": r.id,
-#             "type": r.source,  # "form" or "webcam"
+#             "type": r.source,
 #             "predicted_stress": r.predicted_stress,
 #             "created_at": r.created_at,
 #         }
 
-#         # ✅ FORM RECORD
 #         if r.source == "form":
 #             base_data.update({
 #                 "sleep_hours": r.sleep_hours,
@@ -273,19 +277,13 @@
 #                 "screen_time": r.screen_time,
 #                 "attendance": r.attendance,
 #                 "deadline_pressure": r.deadline_pressure,
-
-#                 # ❌ explicitly null for clarity
 #                 "emotion": None,
 #                 "image": None
 #             })
-
-#         # ✅ WEBCAM RECORD
 #         else:
 #             base_data.update({
 #                 "emotion": r.emotion,
 #                 "image": r.image_path,
-
-#                 # ❌ no fake 0 values
 #                 "sleep_hours": None,
 #                 "study_hours": None,
 #                 "screen_time": None,
@@ -296,7 +294,6 @@
 #         response.append(base_data)
 
 #     return response
-
 
 # # -------- FORGOT PASSWORD --------
 
@@ -329,9 +326,6 @@
 #     if not user:
 #         raise HTTPException(status_code=404)
 
-#     if not user.reset_otp:
-#         raise HTTPException(status_code=400, detail="Request OTP first")
-
 #     if user.reset_otp != data.otp:
 #         raise HTTPException(status_code=400, detail="Invalid OTP")
 
@@ -345,8 +339,6 @@
 #     db.commit()
 
 #     return {"message": "Password reset successful"}
-
-# # -------- DEACTIVATE --------
 
 # @app.delete("/deactivate-account")
 # def deactivate(user=Depends(get_current_user), db: Session = Depends(get_db)):
@@ -371,23 +363,18 @@
 #     try:
 #         contents = await file.read()
 
-#         # Convert image to OpenCV format
 #         np_arr = np.frombuffer(contents, np.uint8)
 #         img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-#         try:
-#             analysis = DeepFace.analyze(
-#                 img,
-#                 actions=['emotion'],
-#                 detector_backend='opencv',
-#                 enforce_detection=False   # 🔥 ADD THIS
-#             )
-#         except Exception as e:
-#             print("Webcam Error:", e)
-#             raise HTTPException(status_code=500, detail="Model error")
-        
+
+#         analysis = DeepFace.analyze(
+#             img,
+#             actions=['emotion'],
+#             detector_backend='opencv',
+#             enforce_detection=False
+#         )
+
 #         emotion = analysis[0]['dominant_emotion']
 
-#         # 🔥 Map emotion → stress
 #         if emotion in ["angry", "fear", "sad"]:
 #             stress = "High"
 #         elif emotion == "neutral":
@@ -395,27 +382,17 @@
 #         else:
 #             stress = "Low"
 
-#         # 🔥 Save to DB
 #         filename = f"user_{current_user.id}_{int(datetime.utcnow().timestamp())}.jpg"
 #         filepath = os.path.join(UPLOAD_DIR, filename)
 #         cv2.imwrite(filepath, img)
-#         image_path=filepath
 
-#         # 🔥 Save correct webcam record
-         
 #         record = models.StressRecord(
 #             user_id=current_user.id,
-#             sleep_hours=None,
-#             study_hours=None,
-#             screen_time=None,
-#             attendance=None,
-#             deadline_pressure=None,
 #             predicted_stress=stress,
-#             source="webcam",            # ✅ differentiate
-#             image_path=image_path,        # ✅ save image
-#             emotion=emotion             # ✅ NEW FIELD (IMPORTANT)
+#             source="webcam",
+#             image_path = f"/uploads/{filename}",
+#             emotion=emotion
 #         )
-        
 
 #         db.add(record)
 #         db.commit()
@@ -430,6 +407,7 @@
 #     except Exception as e:
 #         print("Webcam Error:", e)
 #         raise HTTPException(status_code=500, detail="Webcam processing failed")
+
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -442,11 +420,11 @@ import random
 import os
 from dotenv import load_dotenv
 
-# 🔥 SendGrid
+# SendGrid
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-# 🔥 DeepFace
+# DeepFace
 from deepface import DeepFace
 import numpy as np
 import cv2
@@ -457,7 +435,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 
-
 # ================= INIT =================
 
 load_dotenv()
@@ -465,26 +442,27 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# 🔥 BASE DIR FIX (IMPORTANT FOR RENDER)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 🔥 Uploads
+# 🔥 IMPORTANT: your deployed backend URL
+BASE_URL = os.getenv("BASE_URL", "https://stress-web.onrender.com")
+
+# Upload folder
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-# 🔥 DeepFace LOCAL WEIGHTS FIX
+# DeepFace config
 os.environ["DEEPFACE_HOME"] = BASE_DIR
-print("DeepFace HOME:", os.environ["DEEPFACE_HOME"])
-print("Expected weights path:", os.path.join(os.environ["DEEPFACE_HOME"], ".deepface", "weights"))
 
-# 🔥 ENV VARIABLES
+# ENV
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 EMAIL_FROM = os.getenv("EMAIL_FROM")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-# 🔥 CORS
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://stress-web-app.vercel.app"],
@@ -549,22 +527,17 @@ def send_email(to_email, subject, body):
         )
 
         sg = SendGridAPIClient(SENDGRID_API_KEY)
-        response = sg.send(message)
-
-        print("Email sent:", response.status_code)
+        sg.send(message)
 
     except Exception as e:
         print("Email Error:", str(e))
 
-
 def send_verification_email(email, user_id):
-    link = f"https://stress-web.onrender.com/verify-email/{user_id}"
+    link = f"{BASE_URL}/verify-email/{user_id}"
     send_email(email, "Verify Account", f"Click to verify:\n{link}")
 
-
 def send_otp_email(email, otp):
-    send_email(email, "OTP Code", f"Your OTP is {otp} (valid 5 min)")
-
+    send_email(email, "OTP Code", f"Your OTP is {otp}")
 
 def generate_otp():
     return str(random.randint(100000, 999999))
@@ -587,15 +560,15 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         user_id = payload.get("user_id")
 
         if user_id is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise HTTPException(status_code=401)
 
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=401)
 
     user = db.query(models.User).filter(models.User.id == user_id).first()
 
     if not user:
-        raise HTTPException(status_code=401, detail="User not found")
+        raise HTTPException(status_code=401)
 
     return user
 
@@ -611,7 +584,7 @@ def home():
 def register(user: UserCreate, db: Session = Depends(get_db)):
 
     if db.query(models.User).filter(models.User.email == user.email).first():
-        raise HTTPException(status_code=400, detail="Email exists")
+        raise HTTPException(status_code=400)
 
     new_user = models.User(
         name=user.name,
@@ -626,7 +599,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
     send_verification_email(new_user.email, new_user.id)
 
-    return {"message": "Check email to verify"}
+    return {"message": "Check email"}
 
 # -------- LOGIN --------
 
@@ -636,51 +609,14 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     user = db.query(models.User).filter(models.User.email == form_data.username).first()
 
     if not user or not verify_password(form_data.password, user.password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(status_code=401)
 
     if not user.is_verified:
-        raise HTTPException(status_code=403, detail="Verify email first")
+        raise HTTPException(status_code=403)
 
     token = create_access_token({"user_id": user.id})
 
     return {"access_token": token, "token_type": "bearer"}
-
-# -------- VERIFY --------
-
-@app.get("/verify-email/{user_id}")
-def verify(user_id: int, db: Session = Depends(get_db)):
-
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-
-    if not user:
-        raise HTTPException(status_code=404)
-
-    user.is_verified = True
-    db.commit()
-
-    return {"message": "Email verified"}
-
-# -------- PREDICT --------
-
-@app.post("/predict")
-def predict(data: StressInput, user=Depends(get_current_user), db: Session = Depends(get_db)):
-
-    df = pd.DataFrame([data.dict()])
-    pred = model.predict(df)
-    label = label_encoder.inverse_transform(pred)[0]
-
-    record = models.StressRecord(
-        **data.dict(),
-        predicted_stress=label,
-        user_id=user.id,
-        source="form"
-    )
-
-    db.add(record)
-    db.commit()
-    db.refresh(record)
-
-    return {"predicted_stress": label, "timestamp": record.created_at}
 
 # -------- HISTORY --------
 
@@ -695,96 +631,21 @@ def history(user=Depends(get_current_user), db: Session = Depends(get_db)):
     response = []
 
     for r in records:
-        base_data = {
+
+        image_url = f"{BASE_URL}{r.image_path}" if r.image_path else None
+
+        response.append({
             "id": r.id,
             "type": r.source,
             "predicted_stress": r.predicted_stress,
-            "created_at": r.created_at,
-        }
-
-        if r.source == "form":
-            base_data.update({
-                "sleep_hours": r.sleep_hours,
-                "study_hours": r.study_hours,
-                "screen_time": r.screen_time,
-                "attendance": r.attendance,
-                "deadline_pressure": r.deadline_pressure,
-                "emotion": None,
-                "image": None
-            })
-        else:
-            base_data.update({
-                "emotion": r.emotion,
-                "image": r.image_path,
-                "sleep_hours": None,
-                "study_hours": None,
-                "screen_time": None,
-                "attendance": None,
-                "deadline_pressure": None,
-            })
-
-        response.append(base_data)
+            "emotion": r.emotion,
+            "image": image_url,
+            "created_at": r.created_at
+        })
 
     return response
 
-# -------- FORGOT PASSWORD --------
-
-@app.post("/forgot-password")
-def forgot_password(data: ForgotPasswordSchema, db: Session = Depends(get_db)):
-
-    user = db.query(models.User).filter(models.User.email == data.email).first()
-
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    otp = generate_otp()
-
-    user.reset_otp = otp
-    user.otp_expiry = datetime.utcnow() + timedelta(minutes=5)
-
-    db.commit()
-
-    send_otp_email(user.email, otp)
-
-    return {"message": "OTP sent"}
-
-# -------- RESET PASSWORD --------
-
-@app.post("/reset-password")
-def reset_password(data: ResetPasswordSchema, db: Session = Depends(get_db)):
-
-    user = db.query(models.User).filter(models.User.email == data.email).first()
-
-    if not user:
-        raise HTTPException(status_code=404)
-
-    if user.reset_otp != data.otp:
-        raise HTTPException(status_code=400, detail="Invalid OTP")
-
-    if datetime.utcnow() > user.otp_expiry:
-        raise HTTPException(status_code=400, detail="OTP expired")
-
-    user.password = hash_password(data.new_password)
-    user.reset_otp = None
-    user.otp_expiry = None
-
-    db.commit()
-
-    return {"message": "Password reset successful"}
-
-@app.delete("/deactivate-account")
-def deactivate(user=Depends(get_current_user), db: Session = Depends(get_db)):
-
-    user.email = f"deleted_{user.id}@anon.com"
-    user.name = "Deleted User"
-    user.password = ""
-    user.is_verified = False
-
-    db.commit()
-
-    return {"message": "Account deactivated"}
-
-# -------- WEBCAM STRESS --------
+# -------- WEBCAM --------
 
 @app.post("/webcam-stress")
 async def webcam_stress(
@@ -801,7 +662,6 @@ async def webcam_stress(
         analysis = DeepFace.analyze(
             img,
             actions=['emotion'],
-            detector_backend='opencv',
             enforce_detection=False
         )
 
@@ -816,13 +676,16 @@ async def webcam_stress(
 
         filename = f"user_{current_user.id}_{int(datetime.utcnow().timestamp())}.jpg"
         filepath = os.path.join(UPLOAD_DIR, filename)
+
         cv2.imwrite(filepath, img)
+
+        image_path = f"/uploads/{filename}"
 
         record = models.StressRecord(
             user_id=current_user.id,
             predicted_stress=stress,
             source="webcam",
-            image_path=filepath,
+            image_path=image_path,
             emotion=emotion
         )
 
@@ -833,9 +696,9 @@ async def webcam_stress(
         return {
             "emotion": emotion,
             "predicted_stress": stress,
-            "timestamp": record.created_at
+            "image": f"{BASE_URL}{image_path}"
         }
 
     except Exception as e:
-        print("Webcam Error:", e)
-        raise HTTPException(status_code=500, detail="Webcam processing failed")
+        print("Error:", e)
+        raise HTTPException(status_code=500)
