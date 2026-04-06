@@ -141,7 +141,7 @@ def send_verification_email(email, user_id):
         </a>
         <p>If you didn’t request this, you can ignore this email.</p>
     </body>
-    # </html>''')
+    </html>''')
     # send_email(email, "Verify Account", f"Click to verify:\n{link}")
 
 
