@@ -56,7 +56,7 @@ function App() {
           }
         />
         <Route path="/reset-password" element={<ResetPassword />} />
-        // <Route path="/verified" element={<Verified />} />
+        
 
         {/* Fallback Route */}
 
