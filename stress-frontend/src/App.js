@@ -8,6 +8,9 @@ import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import ResetPassword from "./pages/ResetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Verified from "./pages/Verified";
+
+
 
 function App() {
 
@@ -55,6 +58,8 @@ function App() {
           }
         />
         <Route path="/reset-password" element={<ResetPassword />} />
+        // <Route path="/verified" element={<Verified />} />
+        <Route path="/verified" element={<Verified />} />
 
         {/* Fallback Route */}
 
