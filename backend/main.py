@@ -125,9 +125,23 @@ def send_email(to_email, subject, body):
         print("Email Error:", str(e))
 
 
+
 def send_verification_email(email, user_id):
     link = f"https://stress-web.onrender.com/verify-email/{user_id}"
-    send_email(email, "Verify Account", f"Click to verify:\n{link}")
+    send_email(
+    email,
+    "Verify your account - Stress Detection App",
+    f'''<html>
+    <body style="font-family:Arial;">
+        <h2>Verify Your Email</h2>
+        <p>Click the button below to verify your account:</p>
+        <a href="{link}" style="background-color:#4CAF50;color:white;padding:10px 15px;text-decoration:none;border-radius:5px;">
+            Verify Email
+        </a>
+        <p>If you didn’t request this, you can ignore this email.</p>
+    </body>
+    # </html>''')
+    # send_email(email, "Verify Account", f"Click to verify:\n{link}")
 
 
 def send_otp_email(email, otp):
