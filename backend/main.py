@@ -229,18 +229,40 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 # -------- VERIFY --------
 
-@app.get("/verify-email/{user_id}")
+# @app.get("/verify-email/{user_id}")
+# def verify(user_id: int, db: Session = Depends(get_db)):
+
+#     user = db.query(models.User).filter(models.User.id == user_id).first()
+
+#     if not user:
+#         raise HTTPException(status_code=404)
+
+#     user.is_verified = True
+#     db.commit()
+
+#     return {"message": "Email verified"}
+@app.get("/verify-email/{user_id}", response_class=HTMLResponse)
 def verify(user_id: int, db: Session = Depends(get_db)):
 
     user = db.query(models.User).filter(models.User.id == user_id).first()
 
     if not user:
-        raise HTTPException(status_code=404)
+        return "<h2>❌ Invalid verification link</h2>"
 
     user.is_verified = True
     db.commit()
 
-    return {"message": "Email verified"}
+    return '''
+    <html>
+        <head>
+            <title>Verified</title>
+        </head>
+        <body style="text-align:center; font-family:sans-serif; margin-top:50px;">
+            <h1 style="color:green;">✅ Email Verified</h1>
+            <p>You can now login to your account.</p>
+        </body>
+    </html>
+    '''
 
 # -------- PREDICT --------
 
