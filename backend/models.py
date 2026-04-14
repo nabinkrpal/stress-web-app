@@ -23,7 +23,8 @@ class User(Base):
 
     # Email verification
     is_verified = Column(Boolean, default=False)
-    feedbacks = relationship("Feedback", back_populates="user")
+    # feedbacks = relationship("Feedback", back_populates="user")
+    
 
     # OTP fields
     reset_otp = Column(String(10), nullable=True)
@@ -64,16 +65,16 @@ class StressRecord(Base):
 # =========================
 # FEEDBACK TABLE
 # =========================
-class Feedback(Base):
-    __tablename__ = "feedback"
+# class Feedback(Base):
+#     __tablename__ = "feedback"
 
-    id = Column(Integer, primary_key=True, index=True)
+#     id = Column(Integer, primary_key=True, index=True)
 
-    name = Column(String(100), nullable=False)
-    message = Column(String(500), nullable=False)
+#     name = Column(String(100), nullable=False)
+#     message = Column(String(500), nullable=False)
 
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+#     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
-    created_at = Column(DateTime, default=get_ist_time)
+#     created_at = Column(DateTime, default=get_ist_time)
 
-    user = relationship("User", back_populates="feedbacks")
+#     user = relationship("User", back_populates="feedbacks")
