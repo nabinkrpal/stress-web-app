@@ -558,10 +558,16 @@ function History() {
                     </div>
 
                     {item.type === "webcam" ? (
-                      <>                   
-                        {item.image && <img src={item.image} alt="Captured" className="record-img" />}
-                        <p className="record-emotion">Emotion: <span>{item.emotion || "N/A"}</span></p> 
-                      </>
+                      <>       
+                         {/* IMAGE */}
+                        {item.image && (
+                          <img
+                            src={item.image}
+                            // src={`https://stress-web.onrender.com${item.image}`}
+                            alt="Captured"
+                            className="w-40 h-28 object-cover rounded mb-2 border"
+                          />
+                        )}
                     ) : (
                       <div className="record-grid">
                         <p>😴 Sleep <span>{item.sleep_hours} hrs</span></p>
