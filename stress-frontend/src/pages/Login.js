@@ -1,214 +1,3 @@
-// import { useState } from "react";
-// import API from "../services/api";
-// import { useNavigate } from "react-router-dom";
-
-// function Login() {
-//   const navigate = useNavigate();
-
-//   const [form, setForm] = useState({
-//     email: "",
-//     password: "",
-//   });
-
-//   const [showForgot, setShowForgot] = useState(false);
-//   const [otpStep, setOtpStep] = useState(false);
-
-//   const [resetData, setResetData] = useState({
-//     email: "",
-//     otp: "",
-//     new_password: "",
-//   });
-
-//   // ================= LOGIN =================
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-
-//     const data = new URLSearchParams();
-//     data.append("username", form.email);
-//     data.append("password", form.password);
-
-//     try {
-//       const res = await API.post("/login", data);
-//       localStorage.setItem("token", res.data.access_token);
-//       navigate("/dashboard");
-//     } catch (error) {
-//       alert("Login failed");
-//     }
-//   };
-
-//   // ================= SEND OTP =================
-//   const handleForgotPassword = async () => {
-//     try {
-//       await API.post("/forgot-password", null, {
-//         params: { email: resetData.email },
-//       });
-
-//       alert("OTP sent to your email");
-//       setOtpStep(true);
-//     } catch (error) {
-//       alert("Error sending OTP");
-//     }
-//   };
-
-//   // ================= RESET PASSWORD =================
-//   const handleResetPassword = async () => {
-//     try {
-//       await API.post("/reset-password", resetData);
-//       alert("Password reset successful");
-
-//       setShowForgot(false);
-//       setOtpStep(false);
-//     } catch (error) {
-//       alert("Reset failed");
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200">
-
-//       <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md">
-
-//         <h2 className="text-3xl font-bold text-center text-blue-700 mb-6">
-//           Student Stress Login
-//         </h2>
-
-//         {!showForgot ? (
-//           <>
-//             {/* ================= LOGIN FORM ================= */}
-//             <form onSubmit={handleSubmit} className="space-y-5">
-
-//               <div>
-//                 <label className="block font-semibold mb-1">Email</label>
-//                 <input
-//                   type="email"
-//                   required
-//                   placeholder="Enter your email"
-//                   onChange={(e) =>
-//                     setForm({ ...form, email: e.target.value })
-//                   }
-//                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-//                 />
-//               </div>
-
-//               <div>
-//                 <label className="block font-semibold mb-1">Password</label>
-//                 <input
-//                   type="password"
-//                   required
-//                   placeholder="Enter your password"
-//                   onChange={(e) =>
-//                     setForm({ ...form, password: e.target.value })
-//                   }
-//                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-//                 />
-//               </div>
-
-//               <button
-//                 type="submit"
-//                 className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold"
-//               >
-//                 Login
-//               </button>
-//             </form>
-
-//             {/* Forgot Password */}
-//             <p
-//               onClick={() => setShowForgot(true)}
-//               className="text-right mt-2 text-sm text-blue-600 cursor-pointer hover:underline"
-//             >
-//               Forgot Password?
-//             </p>
-
-//             <p className="text-center mt-6 text-gray-600">
-//               Don’t have an account?{" "}
-//               <span
-//                 onClick={() => navigate("/register")}
-//                 className="text-blue-600 cursor-pointer hover:underline font-medium"
-//               >
-//                 Register
-//               </span>
-//             </p>
-//           </>
-//         ) : (
-//           <>
-//             {/* ================= FORGOT PASSWORD ================= */}
-
-//             <h3 className="text-xl font-semibold mb-4 text-center">
-//               Reset Password
-//             </h3>
-
-//             {!otpStep ? (
-//               <>
-//                 {/* Email Input */}
-//                 <input
-//                   type="email"
-//                   placeholder="Enter your registered email"
-//                   onChange={(e) =>
-//                     setResetData({ ...resetData, email: e.target.value })
-//                   }
-//                   className="w-full p-3 border rounded-lg mb-4"
-//                 />
-
-//                 <button
-//                   onClick={handleForgotPassword}
-//                   className="w-full bg-blue-500 text-white py-2 rounded-lg"
-//                 >
-//                   Send OTP
-//                 </button>
-//               </>
-//             ) : (
-//               <>
-//                 {/* OTP + New Password */}
-//                 <input
-//                   type="text"
-//                   placeholder="Enter OTP"
-//                   onChange={(e) =>
-//                     setResetData({ ...resetData, otp: e.target.value })
-//                   }
-//                   className="w-full p-3 border rounded-lg mb-3"
-//                 />
-
-//                 <input
-//                   type="password"
-//                   placeholder="New Password"
-//                   onChange={(e) =>
-//                     setResetData({
-//                       ...resetData,
-//                       new_password: e.target.value,
-//                     })
-//                   }
-//                   className="w-full p-3 border rounded-lg mb-4"
-//                 />
-
-//                 <button
-//                   onClick={handleResetPassword}
-//                   className="w-full bg-green-500 text-white py-2 rounded-lg"
-//                 >
-//                   Reset Password
-//                 </button>
-//               </>
-//             )}
-
-//             {/* Back */}
-            
-//             <p
-//               onClick={() => {
-//                 setShowForgot(false);
-//                 setOtpStep(false);
-//               }}
-//               className="text-center mt-4 text-blue-600 cursor-pointer hover:underline"
-//             >
-//               Back to Login
-//             </p>
-//           </>
-//         )}
-
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default Login;
 import { useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
@@ -222,6 +11,7 @@ function Login() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   /* -------------------------
       Handle Login
@@ -229,49 +19,60 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     const data = new URLSearchParams();
-    data.append("username", form.email);   // IMPORTANT for FastAPI
+    data.append("username", form.email);
     data.append("password", form.password);
 
     try {
       const res = await API.post("/login", data);
 
       localStorage.setItem("token", res.data.access_token);
-
-      alert("Login successful 🚀");
       navigate("/dashboard");
 
     } catch (error) {
       if (error.response?.status === 401) {
-        alert("Invalid email or password");
+        setError("Invalid email or password");
       } else if (error.response?.status === 403) {
-        alert("Please verify your email first");
+        setError("Please verify your email first");
       } else {
-        alert("Login failed. Try again.");
+        setError("Something went wrong. Try again.");
       }
     }
 
     setLoading(false);
   };
 
-  /* -------------------------
-      UI
-  ------------------------- */
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-black px-4">
 
-      <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md">
+      {/* Card */}
+      <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
 
-        <h2 className="text-3xl font-bold text-center text-blue-700 mb-6">
-          Student Stress Login
+        {/* Title */}
+        <h2 className="text-3xl font-bold text-center text-white mb-2">
+          Stress<span className="text-blue-500">Lens</span>
         </h2>
+        <p className="text-center text-white/60 mb-6">
+          Login to your account
+        </p>
 
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 text-red-400 text-sm text-center bg-red-500/10 py-2 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
 
           {/* Email */}
           <div>
-            <label className="block font-semibold mb-1">Email</label>
+            <label className="block text-sm text-white/70 mb-1">
+              Email
+            </label>
             <input
               type="email"
               required
@@ -280,13 +81,15 @@ function Login() {
               onChange={(e) =>
                 setForm({ ...form, email: e.target.value })
               }
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+              className="w-full p-3 rounded-lg bg-white/10 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Password */}
           <div>
-            <label className="block font-semibold mb-1">Password</label>
+            <label className="block text-sm text-white/70 mb-1">
+              Password
+            </label>
             <input
               type="password"
               required
@@ -295,35 +98,38 @@ function Login() {
               onChange={(e) =>
                 setForm({ ...form, password: e.target.value })
               }
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+              className="w-full p-3 rounded-lg bg-white/10 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* Login Button */}
+          {/* Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold"
+            className="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 transition font-semibold flex items-center justify-center"
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              "Login"
+            )}
           </button>
-
         </form>
 
         {/* Forgot Password */}
         <p
           onClick={() => navigate("/reset-password")}
-          className="text-blue-600 cursor-pointer text-center mt-4 hover:underline"
+          className="text-blue-400 cursor-pointer text-center mt-4 hover:underline text-sm"
         >
           Forgot Password?
         </p>
 
         {/* Register */}
-        <p className="text-center mt-6 text-gray-600">
+        <p className="text-center mt-6 text-white/60 text-sm">
           Don’t have an account?{" "}
           <span
             onClick={() => navigate("/register")}
-            className="text-blue-600 cursor-pointer hover:underline font-medium"
+            className="text-blue-400 cursor-pointer hover:underline font-medium"
           >
             Register
           </span>
