@@ -316,7 +316,7 @@ function Login() {
       <style>{STYLES}</style>
       <div className="auth-root">
         <div className="auth-card">
-          <p className="auth-logo">Stress<span>Lens</span></p>
+          <p className="auth-logo">Stress<span>Sens</span></p>
           <p className="auth-sub">Sign in to your account</p>
           <div className="auth-divider" />
 
