@@ -52,7 +52,7 @@ function Login() {
 
         {/* Title */}
         <h2 className="text-3xl font-bold text-center text-white mb-2">
-          Stress<span className="text-blue-500">Lens</span>
+          Stress<span className="text-blue-500">Sens</span>
         </h2>
         <p className="text-center text-white/60 mb-6">
           Login to your account
