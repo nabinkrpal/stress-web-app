@@ -443,8 +443,11 @@ async def webcam_stress(
             "predicted_stress": stress,
             "timestamp": record.created_at
         }
+    except Exception as e:
+        print("Webcam Error:", e)
+        raise HTTPException(status_code=500, detail="Webcam processing failed")
 
-@app.post("/about-feedback")
+@app.post("/feedback")
 def save_feedback(data: FeedbackSchema, db: Session = Depends(get_db)):
 
     feedback = models.Feedback(
@@ -457,7 +460,3 @@ def save_feedback(data: FeedbackSchema, db: Session = Depends(get_db)):
     db.refresh(feedback)
 
     return {"message": "Feedback saved successfully"}
-    except Exception as e:
-        print("Webcam Error:", e)
-        raise HTTPException(status_code=500, detail="Webcam processing failed")
-
