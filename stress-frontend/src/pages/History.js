@@ -265,7 +265,7 @@ function History() {
 
           {/* Header */}
           <header className="hist-header">
-            <div className="hist-logo">Stress<span>Lens</span> <span style={{ fontSize: 14, fontWeight: 400, color: "var(--text-muted)", fontFamily: "DM Sans" }}>/ History</span></div>
+            <div className="hist-logo">Stress<span>Sens</span> <span style={{ fontSize: 14, fontWeight: 400, color: "var(--text-muted)", fontFamily: "DM Sans" }}>/ History</span></div>
             <button className="btn btn-outline" onClick={() => navigate("/dashboard")}>
               ← Back to Dashboard
             </button>
