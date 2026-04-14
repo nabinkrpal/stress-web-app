@@ -98,6 +98,10 @@ class ResetPasswordSchema(BaseModel):
     otp: str
     new_password: str
 
+class FeedbackSchema(BaseModel):
+    name: str
+    message: str
+
 # ================= EMAIL =================
 def send_email(to_email, subject, body):
     try:
