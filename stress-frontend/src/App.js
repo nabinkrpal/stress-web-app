@@ -8,7 +8,6 @@ import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import ResetPassword from "./pages/ResetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
-import AboutFeedback from "./pages/AboutFeedback";
 
 
 
@@ -59,7 +58,6 @@ function App() {
           }
         />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/about-feedback" element={<AboutFeedback />} />
         
 
         {/* Fallback Route */}
