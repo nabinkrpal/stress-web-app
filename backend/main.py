@@ -444,7 +444,7 @@ async def webcam_stress(
             "timestamp": record.created_at
         }
 
-@app.post("/feedback")
+@app.post("/about-feedback")
 def save_feedback(data: FeedbackSchema, db: Session = Depends(get_db)):
 
     feedback = models.Feedback(
