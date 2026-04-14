@@ -1,352 +1,853 @@
+// import { useState, useEffect, useRef } from "react";
+// import API from "../services/api";
+// import { useNavigate } from "react-router-dom";
+
+// function Dashboard() {
+//   const navigate = useNavigate();
+
+//   const videoRef = useRef(null);
+//   const canvasRef = useRef(null);
+//   const streamRef = useRef(null); // 🔥 important
+
+//   const [formData, setFormData] = useState({
+//     sleep_hours: "",
+//     study_hours: "",
+//     screen_time: "",
+//     attendance: "",
+//     deadline_pressure: "",
+//   });
+
+//   const [result, setResult] = useState(null);
+//   const [webcamResult, setWebcamResult] = useState(null);
+
+//   const [loading, setLoading] = useState(false);
+//   const [cameraOn, setCameraOn] = useState(false);
+
+//   const [stats, setStats] = useState({
+//     total: 0,
+//     high: 0,
+//     avgSleep: 0,
+//   });
+
+//   /* -------------------------
+//       LOAD STATS
+//   ------------------------- */
+//   useEffect(() => {
+//     loadStats();
+//   }, []);
+
+//   const loadStats = async () => {
+//     try {
+//       const res = await API.get("/history");
+//       const records = res.data;
+
+//       const highCount = records.filter(
+//         (r) => r.predicted_stress === "High"
+//       ).length;
+
+//       const formRecords = records.filter((r) => r.type === "form");
+
+//       const avgSleep =
+//         formRecords.reduce((a, b) => a + (b.sleep_hours || 0), 0) /
+//         (formRecords.length || 1);
+
+//       setStats({
+//         total: records.length,
+//         high: highCount,
+//         avgSleep: avgSleep.toFixed(1),
+//       });
+//     } catch {
+//       console.log("Stats load error");
+//     }
+//   };
+
+//   /* -------------------------
+//       CLEANUP CAMERA ON EXIT
+//   ------------------------- */
+//   useEffect(() => {
+//     return () => {
+//       stopCamera();
+//     };
+//   }, []);
+
+//   /* -------------------------
+//       STOP CAMERA ON TAB CHANGE (MOBILE FIX)
+//   ------------------------- */
+//   useEffect(() => {
+//     const handleVisibility = () => {
+//       if (document.hidden) {
+//         stopCamera();
+//       }
+//     };
+
+//     document.addEventListener("visibilitychange", handleVisibility);
+
+//     return () => {
+//       document.removeEventListener("visibilitychange", handleVisibility);
+//     };
+//   }, []);
+
+//   /* -------------------------
+//       INPUT CHANGE
+//   ------------------------- */
+//   const handleChange = (e) => {
+//     setFormData({
+//       ...formData,
+//       [e.target.name]: Number(e.target.value),
+//     });
+//   };
+
+//   /* -------------------------
+//       PREDICT
+//   ------------------------- */
+//   const handlePredict = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
+
+//     try {
+//       const res = await API.post("/predict", formData);
+//       setResult(res.data);
+//       loadStats();
+//     } catch {
+//       alert("Prediction failed");
+//     }
+
+//     setLoading(false);
+//   };
+
+//   const getSuggestion = (stress) => {
+//     if (stress === "High") return "Reduce screen time & improve sleep.";
+//     if (stress === "Medium") return "Balance study with relaxation.";
+//     return "Great! Maintain your routine.";
+//   };
+
+//   /* -------------------------
+//       START CAMERA (MOBILE FIX)
+//   ------------------------- */
+//   const startCamera = async () => {
+//     try {
+//       stopCamera(); // prevent duplicate
+
+//       const stream = await navigator.mediaDevices.getUserMedia({
+//         video: {
+//           facingMode: "user", // 🔥 mobile front cam
+//         },
+//         audio: false,
+//       });
+
+//       streamRef.current = stream;
+
+//       if (videoRef.current) {
+//         videoRef.current.srcObject = stream;
+//       }
+
+//       setCameraOn(true);
+//     } catch {
+//       alert("Camera access denied or not supported");
+//     }
+//   };
+
+//   /* -------------------------
+//       STOP CAMERA
+//   ------------------------- */
+//   const stopCamera = () => {
+//     if (streamRef.current) {
+//       streamRef.current.getTracks().forEach((track) => track.stop());
+//       streamRef.current = null;
+//     }
+
+//     if (videoRef.current) {
+//       videoRef.current.srcObject = null;
+//     }
+
+//     setCameraOn(false);
+//   };
+
+//   /* -------------------------
+//       CAPTURE IMAGE
+//   ------------------------- */
+//   const captureImage = async () => {
+//     const canvas = canvasRef.current;
+//     const video = videoRef.current;
+
+//     canvas.width = video.videoWidth;
+//     canvas.height = video.videoHeight;
+
+//     const ctx = canvas.getContext("2d");
+//     ctx.drawImage(video, 0, 0);
+
+//     canvas.toBlob(async (blob) => {
+//       const formData = new FormData();
+//       formData.append("file", blob, "capture.jpg");
+
+//       try {
+//         const res = await API.post("/webcam-stress", formData, {
+//           headers: { "Content-Type": "multipart/form-data" },
+//         });
+
+//         setWebcamResult(res.data);
+//         loadStats();
+//       } catch {
+//         alert("Webcam detection failed");
+//       }
+//     });
+//   };
+
+//   /* -------------------------
+//       NAVIGATION
+//   ------------------------- */
+//   const handleLogout = () => {
+//     stopCamera();
+//     localStorage.removeItem("token");
+//     navigate("/");
+//   };
+
+//   const goToResetPassword = () => navigate("/reset-password");
+
+//   const handleDeactivate = async () => {
+//     if (!window.confirm("Are you sure?")) return;
+
+//     await API.delete("/deactivate-account");
+//     localStorage.removeItem("token");
+//     navigate("/");
+//   };
+
+//   /* -------------------------
+//       COLORS
+//   ------------------------- */
+//   const getColor = (stress) => {
+//     if (stress === "Low") return "text-green-600";
+//     if (stress === "Medium") return "text-yellow-600";
+//     return "text-red-600";
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 p-4">
+
+//       {/* HEADER */}
+//       <div className="flex flex-col md:flex-row justify-between max-w-6xl mx-auto mb-6 gap-3">
+//         <h1 className="text-2xl md:text-3xl font-bold text-blue-700">
+//           Stress Dashboard
+//         </h1>
+
+//         <div className="flex flex-wrap gap-2">
+//           <button onClick={goToResetPassword} className="bg-yellow-500 text-white px-4 py-2 rounded w-full md:w-auto">
+//             Reset Password
+//           </button>
+
+//           <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded w-full md:w-auto">
+//             Logout
+//           </button>
+//         </div>
+//       </div>
+
+//       {/* STATS */}
+//       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto mb-6">
+//         <div className="bg-white p-4 rounded shadow text-center">
+//           <p>Total</p>
+//           <h2 className="text-xl font-bold">{stats.total}</h2>
+//         </div>
+
+//         <div className="bg-white p-4 rounded shadow text-center">
+//           <p>High Stress</p>
+//           <h2 className="text-xl font-bold text-red-500">{stats.high}</h2>
+//         </div>
+
+//         <div className="bg-white p-4 rounded shadow text-center">
+//           <p>Avg Sleep</p>
+//           <h2 className="text-xl font-bold">{stats.avgSleep}</h2>
+//         </div>
+//       </div>
+
+//       {/* MAIN */}
+//       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+
+//         {/* FORM */}
+//         <div className="bg-white p-6 rounded-xl shadow">
+//           <h2 className="font-bold mb-4">Manual Prediction</h2>
+
+//           <form onSubmit={handlePredict} className="space-y-3">
+//             <input name="sleep_hours" placeholder="Sleep Hours" onChange={handleChange} className="w-full p-2 border rounded"/>
+//             <input name="study_hours" placeholder="Study Hours" onChange={handleChange} className="w-full p-2 border rounded"/>
+//             <input name="screen_time" placeholder="Screen Time" onChange={handleChange} className="w-full p-2 border rounded"/>
+//             <input name="attendance" placeholder="Attendance %" onChange={handleChange} className="w-full p-2 border rounded"/>
+//             <input name="deadline_pressure" placeholder="Deadline Pressure (1-3)" onChange={handleChange} className="w-full p-2 border rounded"/>
+
+//             <button className="w-full bg-blue-600 text-white py-2 rounded">
+//               {loading ? "Predicting..." : "Predict"}
+//             </button>
+//           </form>
+
+//           {result && (
+//             <div className="mt-4 text-center">
+//               <p className={`text-2xl font-bold ${getColor(result.predicted_stress)}`}>
+//                 {result.predicted_stress}
+//               </p>
+//               <p>{getSuggestion(result.predicted_stress)}</p>
+//             </div>
+//           )}
+//         </div>
+
+//         {/* WEBCAM */}
+//         <div className="bg-white p-6 rounded-xl shadow text-center">
+//           <h2 className="font-bold mb-4">Webcam Stress Detection</h2>
+
+//           {!cameraOn ? (
+//             <button onClick={startCamera} className="bg-green-600 text-white px-4 py-2 rounded w-full">
+//               Start Camera
+//             </button>
+//           ) : (
+//             <button onClick={stopCamera} className="bg-red-600 text-white px-4 py-2 rounded w-full">
+//               Stop Camera
+//             </button>
+//           )}
+
+//           <video
+//             ref={videoRef}
+//             autoPlay
+//             playsInline
+//             className="w-full rounded mt-3"
+//           ></video>
+
+//           <canvas ref={canvasRef} className="hidden"></canvas>
+
+//           {cameraOn && (
+//             <button
+//               onClick={captureImage}
+//               className="mt-4 bg-blue-600 text-white px-4 py-2 rounded w-full"
+//             >
+//               Detect Stress
+//             </button>
+//           )}
+
+//           {webcamResult && (
+//             <div className="mt-4">
+//               <p>Emotion: {webcamResult.emotion}</p>
+//               <p className={`text-xl font-bold ${getColor(webcamResult.predicted_stress)}`}>
+//                 {webcamResult.predicted_stress}
+//               </p>
+//             </div>
+//           )}
+//         </div>
+
+//       </div>
+
+//       {/* FOOTER */}
+//       <div className="text-center mt-8">
+//         <button onClick={() => navigate("/history")} className="text-blue-600">
+//           View History
+//         </button>
+//       </div>
+
+//       {/* DANGER */}
+//       <div className="text-center mt-6">
+//         <button onClick={handleDeactivate} className="bg-red-600 text-white px-4 py-2 rounded w-full md:w-auto">
+//           Deactivate Account
+//         </button>
+//       </div>
+
+//     </div>
+//   );
+// }
+
+// export default Dashboard;
 import { useState, useEffect, useRef } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
 
+/* ── Inline styles & keyframes injected once ── */
+const STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #080c14;
+    --surface: rgba(255,255,255,0.04);
+    --surface-hover: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.08);
+    --border-bright: rgba(255,255,255,0.16);
+    --accent: #4f8ef7;
+    --accent-glow: rgba(79,142,247,0.25);
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --text-primary: #f1f5f9;
+    --text-muted: rgba(241,245,249,0.45);
+    --radius: 18px;
+  }
+
+  .dash-root {
+    min-height: 100vh;
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-primary);
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Ambient background blobs */
+  .dash-root::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(79,142,247,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .dash-root::after {
+    content: '';
+    position: fixed;
+    bottom: -150px; right: -100px;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(239,68,68,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .dash-inner { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
+
+  /* Header */
+  .dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .dash-logo { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+  .dash-logo span { color: var(--accent); }
+
+  .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* Glass card */
+  .glass {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    backdrop-filter: blur(20px);
+    transition: border-color .2s, background .2s;
+  }
+  .glass:hover { border-color: var(--border-bright); background: var(--surface-hover); }
+
+  /* Stat cards */
+  .stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 28px; }
+  @media(max-width:640px){ .stats-grid { grid-template-columns: 1fr; } }
+
+  .stat-card {
+    padding: 24px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 60%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 10px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800; line-height: 1; }
+  .stat-value.danger { color: var(--red); }
+  .stat-value.accent { color: var(--accent); }
+
+  /* Main grid */
+  .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media(max-width:768px){ .main-grid { grid-template-columns: 1fr; } }
+
+  /* Section headings */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+  }
+
+  /* Form */
+  .form-card { padding: 28px; }
+
+  .input-group { margin-bottom: 14px; }
+  .input-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 6px; display: block; }
+  .dash-input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    padding: 11px 14px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .dash-input::placeholder { color: rgba(241,245,249,0.25); }
+  .dash-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  /* Buttons */
+  .btn {
+    border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    border-radius: 10px;
+    transition: all .2s;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    padding: 12px 20px;
+    font-size: 14px;
+    width: 100%;
+    box-shadow: 0 4px 20px var(--accent-glow);
+  }
+  .btn-primary:hover { background: #6aa0ff; transform: translateY(-1px); box-shadow: 0 6px 28px var(--accent-glow); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    color: var(--text-primary);
+    padding: 9px 18px;
+    font-size: 13px;
+  }
+  .btn-outline:hover { background: var(--surface-hover); border-color: var(--accent); color: var(--accent); }
+
+  .btn-danger { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: var(--red); padding: 9px 18px; font-size: 13px; }
+  .btn-danger:hover { background: rgba(239,68,68,0.25); }
+
+  .btn-green { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: var(--green); padding: 11px 20px; font-size: 14px; width: 100%; }
+  .btn-green:hover { background: rgba(34,197,94,0.25); }
+
+  .btn-red-full { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: var(--red); padding: 11px 20px; font-size: 14px; width: 100%; }
+  .btn-red-full:hover { background: rgba(239,68,68,0.25); }
+
+  /* Result pill */
+  .result-box {
+    margin-top: 20px;
+    padding: 18px;
+    border-radius: 12px;
+    text-align: center;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    animation: fadeUp .3s ease;
+  }
+  .result-level { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; }
+  .result-level.low { color: var(--green); text-shadow: 0 0 20px rgba(34,197,94,0.4); }
+  .result-level.medium { color: var(--yellow); text-shadow: 0 0 20px rgba(245,158,11,0.4); }
+  .result-level.high { color: var(--red); text-shadow: 0 0 20px rgba(239,68,68,0.4); }
+  .result-hint { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+
+  /* Webcam card */
+  .webcam-card { padding: 28px; }
+  .video-frame {
+    width: 100%;
+    border-radius: 12px;
+    margin: 16px 0 0;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+    display: block;
+  }
+
+  /* Footer actions */
+  .footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 36px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .btn-link {
+    background: none; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--accent);
+    font-size: 14px;
+    padding: 0;
+    display: flex; align-items: center; gap: 6px;
+    transition: opacity .2s;
+  }
+  .btn-link:hover { opacity: .7; }
+  .btn-link svg { transition: transform .2s; }
+  .btn-link:hover svg { transform: translateX(3px); }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border); margin: 8px 0 20px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .pulse-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+    animation: pulse 1.5s infinite;
+    display: inline-block;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+    50%       { box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+  }
+`;
+
 function Dashboard() {
   const navigate = useNavigate();
-
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const streamRef = useRef(null); // 🔥 important
+  const streamRef = useRef(null);
 
   const [formData, setFormData] = useState({
-    sleep_hours: "",
-    study_hours: "",
-    screen_time: "",
-    attendance: "",
-    deadline_pressure: "",
+    sleep_hours: "", study_hours: "", screen_time: "",
+    attendance: "", deadline_pressure: "",
   });
 
   const [result, setResult] = useState(null);
   const [webcamResult, setWebcamResult] = useState(null);
-
   const [loading, setLoading] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
+  const [stats, setStats] = useState({ total: 0, high: 0, avgSleep: 0 });
 
-  const [stats, setStats] = useState({
-    total: 0,
-    high: 0,
-    avgSleep: 0,
-  });
-
-  /* -------------------------
-      LOAD STATS
-  ------------------------- */
-  useEffect(() => {
-    loadStats();
-  }, []);
+  useEffect(() => { loadStats(); }, []);
 
   const loadStats = async () => {
     try {
       const res = await API.get("/history");
       const records = res.data;
-
-      const highCount = records.filter(
-        (r) => r.predicted_stress === "High"
-      ).length;
-
-      const formRecords = records.filter((r) => r.type === "form");
-
-      const avgSleep =
-        formRecords.reduce((a, b) => a + (b.sleep_hours || 0), 0) /
-        (formRecords.length || 1);
-
-      setStats({
-        total: records.length,
-        high: highCount,
-        avgSleep: avgSleep.toFixed(1),
-      });
-    } catch {
-      console.log("Stats load error");
-    }
+      const highCount = records.filter(r => r.predicted_stress === "High").length;
+      const formRecords = records.filter(r => r.type === "form");
+      const avgSleep = formRecords.reduce((a, b) => a + (b.sleep_hours || 0), 0) / (formRecords.length || 1);
+      setStats({ total: records.length, high: highCount, avgSleep: avgSleep.toFixed(1) });
+    } catch { console.log("Stats load error"); }
   };
 
-  /* -------------------------
-      CLEANUP CAMERA ON EXIT
-  ------------------------- */
-  useEffect(() => {
-    return () => {
-      stopCamera();
-    };
-  }, []);
+  useEffect(() => () => stopCamera(), []);
 
-  /* -------------------------
-      STOP CAMERA ON TAB CHANGE (MOBILE FIX)
-  ------------------------- */
   useEffect(() => {
-    const handleVisibility = () => {
-      if (document.hidden) {
-        stopCamera();
-      }
-    };
-
+    const handleVisibility = () => { if (document.hidden) stopCamera(); };
     document.addEventListener("visibilitychange", handleVisibility);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
-  /* -------------------------
-      INPUT CHANGE
-  ------------------------- */
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: Number(e.target.value),
-    });
-  };
+  const handleChange = e => setFormData({ ...formData, [e.target.name]: Number(e.target.value) });
 
-  /* -------------------------
-      PREDICT
-  ------------------------- */
-  const handlePredict = async (e) => {
+  const handlePredict = async e => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const res = await API.post("/predict", formData);
       setResult(res.data);
       loadStats();
-    } catch {
-      alert("Prediction failed");
-    }
-
+    } catch { alert("Prediction failed"); }
     setLoading(false);
   };
 
-  const getSuggestion = (stress) => {
-    if (stress === "High") return "Reduce screen time & improve sleep.";
-    if (stress === "Medium") return "Balance study with relaxation.";
-    return "Great! Maintain your routine.";
+  const getSuggestion = stress => {
+    if (stress === "High") return "Reduce screen time & prioritise sleep tonight.";
+    if (stress === "Medium") return "Balance your study sessions with short breaks.";
+    return "You're doing great — keep up the routine!";
   };
 
-  /* -------------------------
-      START CAMERA (MOBILE FIX)
-  ------------------------- */
   const startCamera = async () => {
     try {
-      stopCamera(); // prevent duplicate
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "user", // 🔥 mobile front cam
-        },
-        audio: false,
-      });
-
+      stopCamera();
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
       streamRef.current = stream;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-
+      if (videoRef.current) videoRef.current.srcObject = stream;
       setCameraOn(true);
-    } catch {
-      alert("Camera access denied or not supported");
-    }
+    } catch { alert("Camera access denied or not supported"); }
   };
 
-  /* -------------------------
-      STOP CAMERA
-  ------------------------- */
   const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-
+    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
+    if (videoRef.current) videoRef.current.srcObject = null;
     setCameraOn(false);
   };
 
-  /* -------------------------
-      CAPTURE IMAGE
-  ------------------------- */
   const captureImage = async () => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
-
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0);
-
-    canvas.toBlob(async (blob) => {
-      const formData = new FormData();
-      formData.append("file", blob, "capture.jpg");
-
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    canvas.toBlob(async blob => {
+      const fd = new FormData();
+      fd.append("file", blob, "capture.jpg");
       try {
-        const res = await API.post("/webcam-stress", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-
+        const res = await API.post("/webcam-stress", fd, { headers: { "Content-Type": "multipart/form-data" } });
         setWebcamResult(res.data);
         loadStats();
-      } catch {
-        alert("Webcam detection failed");
-      }
+      } catch { alert("Webcam detection failed"); }
     });
   };
 
-  /* -------------------------
-      NAVIGATION
-  ------------------------- */
-  const handleLogout = () => {
-    stopCamera();
-    localStorage.removeItem("token");
-    navigate("/");
-  };
-
-  const goToResetPassword = () => navigate("/reset-password");
-
+  const handleLogout = () => { stopCamera(); localStorage.removeItem("token"); navigate("/"); };
   const handleDeactivate = async () => {
-    if (!window.confirm("Are you sure?")) return;
-
+    if (!window.confirm("Permanently deactivate your account?")) return;
     await API.delete("/deactivate-account");
     localStorage.removeItem("token");
     navigate("/");
   };
 
-  /* -------------------------
-      COLORS
-  ------------------------- */
-  const getColor = (stress) => {
-    if (stress === "Low") return "text-green-600";
-    if (stress === "Medium") return "text-yellow-600";
-    return "text-red-600";
-  };
+  const stressClass = s => s === "Low" ? "low" : s === "Medium" ? "medium" : "high";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 p-4">
+    <>
+      <style>{STYLES}</style>
 
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row justify-between max-w-6xl mx-auto mb-6 gap-3">
-        <h1 className="text-2xl md:text-3xl font-bold text-blue-700">
-          Stress Dashboard
-        </h1>
+      <div className="dash-root">
+        <div className="dash-inner">
 
-        <div className="flex flex-wrap gap-2">
-          <button onClick={goToResetPassword} className="bg-yellow-500 text-white px-4 py-2 rounded w-full md:w-auto">
-            Reset Password
-          </button>
+          {/* ── Header ── */}
+          <header className="dash-header">
+            <div className="dash-logo">Stress<span>sens</span></div>
 
-          <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded w-full md:w-auto">
-            Logout
-          </button>
-        </div>
-      </div>
-
-      {/* STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto mb-6">
-        <div className="bg-white p-4 rounded shadow text-center">
-          <p>Total</p>
-          <h2 className="text-xl font-bold">{stats.total}</h2>
-        </div>
-
-        <div className="bg-white p-4 rounded shadow text-center">
-          <p>High Stress</p>
-          <h2 className="text-xl font-bold text-red-500">{stats.high}</h2>
-        </div>
-
-        <div className="bg-white p-4 rounded shadow text-center">
-          <p>Avg Sleep</p>
-          <h2 className="text-xl font-bold">{stats.avgSleep}</h2>
-        </div>
-      </div>
-
-      {/* MAIN */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
-
-        {/* FORM */}
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="font-bold mb-4">Manual Prediction</h2>
-
-          <form onSubmit={handlePredict} className="space-y-3">
-            <input name="sleep_hours" placeholder="Sleep Hours" onChange={handleChange} className="w-full p-2 border rounded"/>
-            <input name="study_hours" placeholder="Study Hours" onChange={handleChange} className="w-full p-2 border rounded"/>
-            <input name="screen_time" placeholder="Screen Time" onChange={handleChange} className="w-full p-2 border rounded"/>
-            <input name="attendance" placeholder="Attendance %" onChange={handleChange} className="w-full p-2 border rounded"/>
-            <input name="deadline_pressure" placeholder="Deadline Pressure (1-3)" onChange={handleChange} className="w-full p-2 border rounded"/>
-
-            <button className="w-full bg-blue-600 text-white py-2 rounded">
-              {loading ? "Predicting..." : "Predict"}
-            </button>
-          </form>
-
-          {result && (
-            <div className="mt-4 text-center">
-              <p className={`text-2xl font-bold ${getColor(result.predicted_stress)}`}>
-                {result.predicted_stress}
-              </p>
-              <p>{getSuggestion(result.predicted_stress)}</p>
+            <div className="header-actions">
+              <button className="btn btn-outline" onClick={() => navigate("/reset-password")}>
+                🔑 Reset Password
+              </button>
+              <button className="btn btn-danger" onClick={handleLogout}>
+                ← Logout
+              </button>
             </div>
-          )}
-        </div>
+          </header>
 
-        {/* WEBCAM */}
-        <div className="bg-white p-6 rounded-xl shadow text-center">
-          <h2 className="font-bold mb-4">Webcam Stress Detection</h2>
-
-          {!cameraOn ? (
-            <button onClick={startCamera} className="bg-green-600 text-white px-4 py-2 rounded w-full">
-              Start Camera
-            </button>
-          ) : (
-            <button onClick={stopCamera} className="bg-red-600 text-white px-4 py-2 rounded w-full">
-              Stop Camera
-            </button>
-          )}
-
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className="w-full rounded mt-3"
-          ></video>
-
-          <canvas ref={canvasRef} className="hidden"></canvas>
-
-          {cameraOn && (
-            <button
-              onClick={captureImage}
-              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded w-full"
-            >
-              Detect Stress
-            </button>
-          )}
-
-          {webcamResult && (
-            <div className="mt-4">
-              <p>Emotion: {webcamResult.emotion}</p>
-              <p className={`text-xl font-bold ${getColor(webcamResult.predicted_stress)}`}>
-                {webcamResult.predicted_stress}
-              </p>
+          {/* ── Stats ── */}
+          <div className="stats-grid">
+            <div className="glass stat-card">
+              <p className="stat-label">Total Checks</p>
+              <p className="stat-value accent">{stats.total}</p>
             </div>
-          )}
+            <div className="glass stat-card">
+              <p className="stat-label">High Stress Events</p>
+              <p className="stat-value danger">{stats.high}</p>
+            </div>
+            <div className="glass stat-card">
+              <p className="stat-label">Avg Sleep (hrs)</p>
+              <p className="stat-value">{stats.avgSleep}</p>
+            </div>
+          </div>
+
+          {/* ── Main grid ── */}
+          <div className="main-grid">
+
+            {/* Form */}
+            <div className="glass form-card">
+              <p className="section-title"><span className="dot"></span>Manual Prediction</p>
+              <div className="divider"></div>
+
+              <form onSubmit={handlePredict}>
+                {[
+                  { name: "sleep_hours",      label: "Sleep Hours" },
+                  { name: "study_hours",      label: "Study Hours" },
+                  { name: "screen_time",      label: "Screen Time (hrs)" },
+                  { name: "attendance",       label: "Attendance %" },
+                  { name: "deadline_pressure",label: "Deadline Pressure (1–3)" },
+                ].map(f => (
+                  <div className="input-group" key={f.name}>
+                    <label className="input-label">{f.label}</label>
+                    <input
+                      className="dash-input"
+                      name={f.name}
+                      placeholder={`Enter ${f.label.toLowerCase()}`}
+                      onChange={handleChange}
+                      type="number"
+                    />
+                  </div>
+                ))}
+
+                <button type="submit" className="btn btn-primary" style={{ marginTop: 8 }}>
+                  {loading ? "Analysing…" : "⚡ Predict Stress Level"}
+                </button>
+              </form>
+
+              {result && (
+                <div className="result-box">
+                  <p className={`result-level ${stressClass(result.predicted_stress)}`}>
+                    {result.predicted_stress} Stress
+                  </p>
+                  <p className="result-hint">{getSuggestion(result.predicted_stress)}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Webcam */}
+            <div className="glass webcam-card">
+              <p className="section-title">
+                <span className="dot" style={{ background: cameraOn ? "var(--green)" : "var(--accent)", boxShadow: cameraOn ? "0 0 10px var(--green)" : "0 0 10px var(--accent)" }}></span>
+                Webcam Detection
+                {cameraOn && <span className="pulse-dot" style={{ marginLeft: "auto" }}></span>}
+              </p>
+              <div className="divider"></div>
+
+              {!cameraOn ? (
+                <button className="btn btn-green" onClick={startCamera}>
+                  📷 Start Camera
+                </button>
+              ) : (
+                <button className="btn btn-red-full" onClick={stopCamera}>
+                  ■ Stop Camera
+                </button>
+              )}
+
+              <video ref={videoRef} autoPlay playsInline className="video-frame" />
+              <canvas ref={canvasRef} style={{ display: "none" }} />
+
+              {cameraOn && (
+                <button className="btn btn-primary" style={{ marginTop: 14 }} onClick={captureImage}>
+                  🔍 Detect Stress Now
+                </button>
+              )}
+
+              {webcamResult && (
+                <div className="result-box">
+                  <p style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 2, color: "var(--text-muted)", marginBottom: 6 }}>
+                    Detected Emotion
+                  </p>
+                  <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 700, marginBottom: 10 }}>
+                    {webcamResult.emotion}
+                  </p>
+                  <p className={`result-level ${stressClass(webcamResult.predicted_stress)}`}>
+                    {webcamResult.predicted_stress} Stress
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Footer row ── */}
+          <div className="footer-row">
+            <button className="btn-link" onClick={() => navigate("/history")}>
+              View History
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+
+            <button className="btn btn-danger" onClick={handleDeactivate} style={{ padding: "10px 20px", fontSize: 13 }}>
+              🗑 Deactivate Account
+            </button>
+          </div>
+
         </div>
-
       </div>
-
-      {/* FOOTER */}
-      <div className="text-center mt-8">
-        <button onClick={() => navigate("/history")} className="text-blue-600">
-          View History
-        </button>
-      </div>
-
-      {/* DANGER */}
-      <div className="text-center mt-6">
-        <button onClick={handleDeactivate} className="bg-red-600 text-white px-4 py-2 rounded w-full md:w-auto">
-          Deactivate Account
-        </button>
-      </div>
-
-    </div>
+    </>
   );
 }
 
