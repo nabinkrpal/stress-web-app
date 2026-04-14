@@ -100,6 +100,11 @@ class User(Base):
         back_populates="user",
         cascade="all, delete"
     )
+    feedbacks = relationship(
+        "Feedback",
+        back_populates="user",
+        cascade="all, delete"
+    )
 
 
 # =========================
