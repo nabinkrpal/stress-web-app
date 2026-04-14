@@ -366,11 +366,6 @@ function Dashboard() {
             <div className="dash-logo">Stress<span>sens</span></div>
 
             <div className="header-actions">
-              <button
-                onClick={() => navigate("/about-feedback")}
-                className="bg-purple-600 px-4 py-2 rounded-lg text-white">
-                About & Feedback
-              </button>
               <button className="btn btn-outline" onClick={() => navigate("/reset-password")}>
                 🔑 Reset Password
               </button>
