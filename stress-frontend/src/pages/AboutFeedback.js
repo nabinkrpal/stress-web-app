@@ -123,6 +123,12 @@
 
 // export default AboutFeedback;
 
+
+
+
+
+
+
 import { useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
@@ -250,36 +256,60 @@ function AboutFeedback() {
     try {
       await API.post("/feedback", { name, message });
       setSuccess("Feedback submitted — thank you!");
-      setName(""); setMessage("");
-    } catch { alert("Error submitting feedback"); }
+      setName("");
+      setMessage("");
+    } catch {
+      alert("Error submitting feedback");
+    }
   };
 
   return (
     <>
       <style>{STYLES}</style>
+
       <div className="about-root">
         <div className="about-inner">
 
           {/* Header */}
           <header className="about-header">
-            <div className="about-logo">Stress<span>Sens</div>
-            <button className="btn-outline" onClick={() => navigate("/dashboard")}>
+            <div className="about-logo">
+              Stress<span>Sens</span>
+            </div>
+
+            <button
+              className="btn-outline"
+              onClick={() => navigate("/dashboard")}
+            >
               ← Dashboard
             </button>
           </header>
 
           {/* About */}
           <div className="glass about-card">
-            <p className="section-title"><span className="dot" /></span>About StressLens</p>
+            <p className="section-title">
+              <span className="dot" /> About StressLens
+            </p>
+
             <div className="divider" />
+
             <p className="about-desc">
               <strong>StressLens</strong> helps students understand and manage stress using AI.
-              It combines <strong>manual lifestyle input</strong> and <strong>webcam-based emotion detection</strong>
+              It combines <strong>manual lifestyle input</strong> and{" "}
+              <strong>webcam-based emotion detection</strong>
               {" "}to deliver accurate stress insights and actionable recommendations for better mental well-being.
             </p>
+
             <div className="features">
-              {["AI Stress Prediction", "Webcam Emotion Detection", "Trend Analysis", "Personalised Insights", "Secure & Private"].map(f => (
-                <span key={f} className="feature-pill">{f}</span>
+              {[
+                "AI Stress Prediction",
+                "Webcam Emotion Detection",
+                "Trend Analysis",
+                "Personalised Insights",
+                "Secure & Private"
+              ].map((f) => (
+                <span key={f} className="feature-pill">
+                  {f}
+                </span>
               ))}
             </div>
           </div>
@@ -287,24 +317,49 @@ function AboutFeedback() {
           {/* Feedback */}
           <div className="glass feedback-card">
             <p className="section-title">
-              <span className="dot" style={{ background: "var(--green)", boxShadow: "0 0 10px var(--green)" }} />
+              <span
+                className="dot"
+                style={{
+                  background: "var(--green)",
+                  boxShadow: "0 0 10px var(--green)"
+                }}
+              />
               Share Feedback
             </p>
+
             <div className="divider" />
 
             <form onSubmit={handleSubmit}>
               <div className="input-group">
                 <label className="input-label">Your Name</label>
-                <input className="about-input" placeholder="Enter your name" value={name} onChange={e => setName(e.target.value)} required />
+                <input
+                  className="about-input"
+                  placeholder="Enter your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
               </div>
+
               <div className="input-group">
                 <label className="input-label">Message</label>
-                <textarea className="about-input" placeholder="Share your thoughts, suggestions or issues…" value={message} onChange={e => setMessage(e.target.value)} required />
+                <textarea
+                  className="about-input"
+                  placeholder="Share your thoughts, suggestions or issues…"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  required
+                />
               </div>
-              <button type="submit" className="btn-primary">⚡ Submit Feedback</button>
+
+              <button type="submit" className="btn-primary">
+                ⚡ Submit Feedback
+              </button>
             </form>
 
-            {success && <div className="alert-success">{success}</div>}
+            {success && (
+              <div className="alert-success">{success}</div>
+            )}
           </div>
 
         </div>
