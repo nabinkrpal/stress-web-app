@@ -262,7 +262,7 @@ function AboutFeedback() {
 
           {/* Header */}
           <header className="about-header">
-            <div className="about-logo">Stress<span>Lens</span></div>
+            <div className="about-logo">Stress<span>Sens</div>
             <button className="btn-outline" onClick={() => navigate("/dashboard")}>
               ← Dashboard
             </button>
