@@ -39,7 +39,7 @@ function AboutFeedback() {
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold">
-            About <span className="text-blue-500">StressLens</span>
+            About <span className="text-blue-500">StressSens</span>
           </h1>
 
           <button
@@ -55,7 +55,7 @@ function AboutFeedback() {
           <h2 className="text-xl font-semibold mb-3">About Us</h2>
 
           <p className="text-white/70 leading-relaxed">
-            StressLens is an AI-powered student stress detection system that helps
+            StressSens is an AI-powered student stress detection system that helps
             analyze stress levels using both manual inputs and webcam-based emotion detection.
             The goal is to help students understand their mental health patterns and improve productivity.
           </p>
