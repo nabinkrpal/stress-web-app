@@ -105,6 +105,9 @@ class ResetPasswordSchema(BaseModel):
     email: str
     otp: str
     new_password: str
+class FeedbackSchema(BaseModel):
+    name: str
+    message: str
 
 # ================= EMAIL =================
 
