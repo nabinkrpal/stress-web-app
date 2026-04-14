@@ -162,7 +162,7 @@ function AboutFeedback() {
             <div className="divider" />
 
             <p className="about-desc">
-              <strong>StressLens</strong> helps students understand and manage stress using AI.
+              <strong>StressSens</strong> helps students understand and manage stress using AI.
               It combines <strong>manual lifestyle input</strong> and{" "}
               <strong>webcam-based emotion detection</strong>
               {" "}to deliver accurate stress insights and actionable recommendations for better mental well-being.
