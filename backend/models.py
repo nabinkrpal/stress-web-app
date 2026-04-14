@@ -23,6 +23,7 @@ class User(Base):
 
     # Email verification
     is_verified = Column(Boolean, default=False)
+    feedbacks = relationship("Feedback", back_populates="user")
 
     # OTP fields
     reset_otp = Column(String(10), nullable=True)
@@ -75,6 +76,4 @@ class Feedback(Base):
 
     created_at = Column(DateTime, default=get_ist_time)
 
-    # ✅ ADD THIS
-    user = relationship("User")
-
+    user = relationship("User", back_populates="feedbacks")
