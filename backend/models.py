@@ -60,6 +60,18 @@ class StressRecord(Base):
     source = Column(String(20), default="form")
     image_path = Column(String(255), nullable=True)
     emotion = Column(String(50), nullable=True)
+# =========================
+# FEEDBACK TABLE
+# =========================
+class Feedback(Base):
+    __tablename__ = "feedback"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    name = Column(String(100), nullable=False)
+    message = Column(String(500), nullable=False)
+
+    created_at = Column(DateTime, default=get_ist_time)
 
     # created_at = Column(DateTime, default=datetime.utcnow)
     created_at = Column(DateTime, default=get_ist_time)
