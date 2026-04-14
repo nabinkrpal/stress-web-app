@@ -499,7 +499,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 # 🔥 CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["[stress-web-app.vercel.app](https://stress-web-app.vercel.app)"],
+    allow_origins=["https://stress-web-app.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
