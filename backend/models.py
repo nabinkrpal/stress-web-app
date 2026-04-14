@@ -71,10 +71,10 @@ class Feedback(Base):
     name = Column(String(100), nullable=False)
     message = Column(String(500), nullable=False)
 
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
     created_at = Column(DateTime, default=get_ist_time)
 
-    # created_at = Column(DateTime, default=datetime.utcnow)
-    created_at = Column(DateTime, default=get_ist_time)
+    # ✅ ADD THIS
+    user = relationship("User")
 
-    # Relationship
-    user = relationship("User", back_populates="records")
