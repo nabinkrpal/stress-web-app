@@ -443,7 +443,6 @@ async def webcam_stress(
             "predicted_stress": stress,
             "timestamp": record.created_at
         }
-    @app.post("/feedback")
 
 @app.post("/feedback")
 def save_feedback(data: FeedbackSchema, db: Session = Depends(get_db)):
