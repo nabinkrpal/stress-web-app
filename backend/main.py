@@ -25,7 +25,16 @@ import models
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
+############
+import cloudinary
+import cloudinary.uploader
 
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET")
+)
+############15-04-2026 17:21
 # ================= INIT =================
 load_dotenv()
 models.Base.metadata.create_all(bind=engine)
@@ -364,15 +373,26 @@ async def webcam_stress(
         else:
             stress = "Low"
         
-        filename = f"user_{current_user.id}_{int(datetime.utcnow().timestamp())}.jpg"
-        filepath = os.path.join(UPLOAD_DIR, filename)
-        cv2.imwrite(filepath, img)
+        # filename = f"user_{current_user.id}_{int(datetime.utcnow().timestamp())}.jpg"
+        # filepath = os.path.join(UPLOAD_DIR, filename)
+        # cv2.imwrite(filepath, img)
+        # Convert image to bytes 17:23 15/04/2026
+        _, buffer = cv2.imencode(".jpg", img)
+        
+        upload_result = cloudinary.uploader.upload(
+            buffer.tobytes(),
+            folder="stress_app"
+        )
+        
+        image_url = upload_result["secure_url"]
+        #####
 
         record = models.StressRecord(
             user_id=current_user.id,
             predicted_stress=stress,
             source="webcam",
-            image_path = f"/uploads/{filename}",
+            # image_path = f"/uploads/{filename}", 17:24 15/04/2026
+            image_path = image_url,
             emotion=emotion
         )
         db.add(record)
