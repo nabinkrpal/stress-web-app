@@ -117,12 +117,54 @@ def send_email(to_email, subject, body):
     except Exception as e:
         print("Email Error:", str(e))
 
+
 def send_verification_email(email, user_id):
     link = f"https://stress-web.onrender.com/verify-email/{user_id}"
-    send_email(email, "Verify Account", f"Click to verify:\n{link}")
+
+    body = f"""
+Hello,
+
+Thank you for registering on StressSens.
+
+To activate your account, please verify your email by clicking the link below:
+
+{link}
+
+If you did not create this account, you can safely ignore this email.
+
+Regards,  
+StressSens Team
+"""
+
+    send_email(email, "Verify your StressSens account", body)
+# def send_verification_email(email, user_id):
+#     link = f"https://stress-web.onrender.com/verify-email/{user_id}"
+#     send_email(email, "Verify Account", f"Click to verify:\n{link}")
 
 def send_otp_email(email, otp):
-    send_email(email, "OTP Code", f"Your OTP is {otp} (valid 5 min)")
+    body = f"""
+Hello,
+
+We received a request to reset your password for your StressSens account.
+
+Your One-Time Password (OTP) is:
+
+{otp}
+
+This code is valid for 5 minutes.
+
+If you did not request this, please ignore this email.
+
+This is an automated message, please do not reply.
+
+Regards,  
+StressSens Team
+"""
+
+    send_email(email, "Your StressSens OTP Code", body)
+
+# def send_otp_email(email, otp):
+#     send_email(email, "OTP Code", f"Your OTP is {otp} (valid 5 min)")
 
 def generate_otp():
     return str(random.randint(100000, 999999))
