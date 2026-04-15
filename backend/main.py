@@ -300,7 +300,8 @@ def history(user=Depends(get_current_user), db: Session = Depends(get_db)):
         else:
             base_data.update({
                 "emotion": r.emotion,
-                "image": f"https://stress-web.onrender.com{r.image_path}" if r.image_path else None,
+                # "image": f"https://stress-web.onrender.com{r.image_path}" if r.image_path else None, 17:26 12-04-2026
+                "image": r.image_path,
                 "sleep_hours": None,
                 "study_hours": None,
                 "screen_time": None,
