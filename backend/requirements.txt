@@ -7,6 +7,7 @@ passlib[bcrypt]
 python-dotenv
 argon2-cffi
 sendgrid
+cloudinary
 
 numpy==1.23.5
 pandas==2.3.3
