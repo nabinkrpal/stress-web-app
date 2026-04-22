@@ -254,6 +254,31 @@ function History() {
       tension: 0.4,
     }],
   };
+  const exportPDF = async () => {
+    try {
+      const token = localStorage.getItem("token");
+  
+      const response = await fetch("https://stress-web.onrender.com/export-pdf", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+  
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+  
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "stress_report.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+  
+    } catch (err) {
+      alert("Failed to download PDF");
+    }
+  };
 
   const badgeClass = s => s === "Low" ? "low" : s === "Medium" ? "medium" : "high";
 
@@ -345,11 +370,8 @@ function History() {
               },
             }} />
           </div>
-          <button
-              className="btn btn-outline"
-              style={{ marginBottom: "20px" }}
-              onClick={() => window.open("https://stress-web.onrender.com/export-pdf", "_blank")}>
-              📄 Download Report
+          <button onClick={exportPDF} className="btn btn-primary">
+            📄 Export Report
           </button>
         </div>
       </div>
