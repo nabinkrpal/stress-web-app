@@ -346,7 +346,7 @@ function History() {
             }} />
           </div>
           <button
-              className="btn btn-primary"
+              className="btn btn-outline"
               style={{ marginBottom: "20px" }}
               onClick={() => window.open("https://stress-web.onrender.com/export-pdf", "_blank")}>
               📄 Download Report
