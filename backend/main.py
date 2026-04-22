@@ -1,14 +1,63 @@
+# from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
+# from fastapi.responses import HTMLResponse
+# from pydantic import BaseModel
+# from sqlalchemy.orm import Session
+# from datetime import datetime, timedelta
+# from jose import JWTError, jwt
+# from passlib.context import CryptContext
+# import joblib
+# import pandas as pd
+# import random
+# import os
+# from dotenv import load_dotenv
+
+# # 🔥 SendGrid
+# from sendgrid import SendGridAPIClient
+# from sendgrid.helpers.mail import Mail
+
+# # 🔥 DeepFace
+# from deepface import DeepFace
+# import numpy as np
+# import cv2
+
+# from database import engine, SessionLocal
+# import models
+# from fastapi.middleware.cors import CORSMiddleware
+# from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+# from fastapi.staticfiles import StaticFiles
+
+# ###################
+# from fastapi.responses import FileResponse
+# from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+# from reportlab.lib import colors
+# from reportlab.lib.styles import getSampleStyleSheet
+# from fastapi.responses import FileResponse
+# from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+# from reportlab.lib.styles import getSampleStyleSheet
+# import os
+# from datetime import datetime
+
+# import cloudinary
+# import cloudinary.uploader
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+
 from datetime import datetime, timedelta
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+import os
+import random
 import joblib
 import pandas as pd
-import random
-import os
+import numpy as np
+import cv2
+
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 from dotenv import load_dotenv
 
 # 🔥 SendGrid
@@ -17,22 +66,17 @@ from sendgrid.helpers.mail import Mail
 
 # 🔥 DeepFace
 from deepface import DeepFace
-import numpy as np
-import cv2
 
+# 🔥 Database
 from database import engine, SessionLocal
 import models
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi.staticfiles import StaticFiles
 
-###################
-from fastapi.responses import FileResponse
+# 🔥 ReportLab (PDF)
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 
-
+# 🔥 Cloudinary
 import cloudinary
 import cloudinary.uploader
 
@@ -435,63 +479,206 @@ def submit_feedback(
 
     return {"message": "Feedback submitted successfully"}
 
-###################
 @app.get("/export-pdf")
 def export_pdf(user=Depends(get_current_user), db: Session = Depends(get_db)):
+
+    # 📥 Fetch user records
     records = db.query(models.StressRecord)\
         .filter(models.StressRecord.user_id == user.id)\
-        .order_by(models.StressRecord.created_at.desc())\
+        .order_by(models.StressRecord.created_at.asc())\
         .all()
 
+    if not records:
+        raise HTTPException(status_code=404, detail="No records found")
+
+    # =========================
+    # 📊 SUMMARY CALCULATIONS
+    # =========================
+    total = len(records)
+    high = sum(1 for r in records if r.predicted_stress == "High")
+    medium = sum(1 for r in records if r.predicted_stress == "Medium")
+    low = sum(1 for r in records if r.predicted_stress == "Low")
+
+    high_percent = (high / total * 100) if total else 0
+
+    # =========================
+    # 🔥 STREAK DETECTION
+    # =========================
+    high_streak = 0
+    max_high_streak = 0
+
+    low_streak = 0
+    max_low_streak = 0
+
+    for r in records:
+        if r.predicted_stress == "High":
+            high_streak += 1
+            max_high_streak = max(max_high_streak, high_streak)
+        else:
+            high_streak = 0
+
+        if r.predicted_stress == "Low":
+            low_streak += 1
+            max_low_streak = max(max_low_streak, low_streak)
+        else:
+            low_streak = 0
+
+    # =========================
+    # 🧠 INSIGHTS
+    # =========================
+    insights = []
+
+    if max_high_streak >= 3:
+        insights.append(f"High stress detected for {max_high_streak} consecutive sessions.")
+
+    if max_low_streak >= 3:
+        insights.append(f"Good stability: low stress for {max_low_streak} sessions.")
+
+    if high_percent > 50:
+        insights.append("Overall stress level is high.")
+
+    if low > high:
+        insights.append("Stress levels are generally under control.")
+
+    if not insights:
+        insights.append("No major stress pattern detected.")
+
+    # =========================
+    # 💡 SUGGESTIONS
+    # =========================
+    suggestions = []
+
+    if high_percent > 50:
+        suggestions.append("Reduce screen time and improve sleep schedule.")
+        suggestions.append("Take short breaks during study/work.")
+
+    if max_high_streak >= 3:
+        suggestions.append("Continuous stress detected — consider relaxation activities.")
+
+    if low > high:
+        suggestions.append("Maintain your current healthy routine.")
+
+    if not suggestions:
+        suggestions.append("Maintain a balanced lifestyle.")
+
+    # =========================
+    # 📄 CREATE PDF
+    # =========================
     file_path = f"report_user_{user.id}.pdf"
 
     doc = SimpleDocTemplate(file_path)
     styles = getSampleStyleSheet()
+    elements = []
 
-    content = []
+    # 🏷 Title
+    elements.append(Paragraph("Stress Analysis Report", styles['Title']))
+    elements.append(Spacer(1, 12))
 
-    # 🔥 Title
-    content.append(Paragraph("Stress Analysis Report", styles["Title"]))
-    content.append(Spacer(1, 10))
+    # 👤 User Info
+    elements.append(Paragraph(f"User: {user.name}", styles['Normal']))
+    elements.append(Paragraph(f"Email: {user.email}", styles['Normal']))
+    elements.append(Paragraph(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M')}", styles['Normal']))
+    elements.append(Spacer(1, 12))
 
-    # 🔥 User Info
-    content.append(Paragraph(f"Name: {user.name}", styles["Normal"]))
-    content.append(Paragraph(f"Email: {user.email}", styles["Normal"]))
-    content.append(Spacer(1, 10))
+    # 📊 Summary
+    elements.append(Paragraph("Summary", styles['Heading2']))
+    elements.append(Paragraph(f"Total Records: {total}", styles['Normal']))
+    elements.append(Paragraph(f"High Stress: {high} ({high_percent:.1f}%)", styles['Normal']))
+    elements.append(Paragraph(f"Medium Stress: {medium}", styles['Normal']))
+    elements.append(Paragraph(f"Low Stress: {low}", styles['Normal']))
+    elements.append(Spacer(1, 12))
 
-    # 🔥 Summary
-    total = len(records)
-    high = len([r for r in records if r.predicted_stress == "High"])
-    content.append(Paragraph(f"Total Records: {total}", styles["Normal"]))
-    content.append(Paragraph(f"High Stress Count: {high}", styles["Normal"]))
-    content.append(Spacer(1, 20))
+    # 🔥 Pattern Analysis
+    elements.append(Paragraph("Stress Pattern Analysis", styles['Heading2']))
+    elements.append(Paragraph(f"Max High Stress Streak: {max_high_streak}", styles['Normal']))
+    elements.append(Paragraph(f"Max Low Stress Streak: {max_low_streak}", styles['Normal']))
+    elements.append(Spacer(1, 12))
 
-    # 🔥 Table Data
-    data = [["Date", "Type", "Stress", "Emotion"]]
+    # 🧠 Insights
+    elements.append(Paragraph("Insights", styles['Heading2']))
+    for ins in insights:
+        elements.append(Paragraph(f"• {ins}", styles['Normal']))
+    elements.append(Spacer(1, 12))
 
-    for r in records:
-        data.append([
-            str(r.created_at),
-            r.source,
-            r.predicted_stress,
-            r.emotion if r.emotion else "-"
-        ])
+    # 💡 Suggestions
+    elements.append(Paragraph("Recommendations", styles['Heading2']))
+    for sug in suggestions:
+        elements.append(Paragraph(f"• {sug}", styles['Normal']))
+    elements.append(Spacer(1, 12))
 
-    table = Table(data)
+    # 📜 Optional: Recent Records Preview
+    elements.append(Paragraph("Recent Records", styles['Heading2']))
+    for r in records[-5:]:
+        elements.append(
+            Paragraph(
+                f"{r.created_at.strftime('%Y-%m-%d')} → {r.predicted_stress}",
+                styles['Normal']
+            )
+        )
 
-    table.setStyle(TableStyle([
-        ("BACKGROUND", (0,0), (-1,0), colors.grey),
-        ("TEXTCOLOR", (0,0), (-1,0), colors.white),
-        ("GRID", (0,0), (-1,-1), 1, colors.black),
-        ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
-    ]))
+    # Build PDF
+    doc.build(elements)
 
-    content.append(table)
+    # 📤 Return file
+    return FileResponse(file_path, media_type='application/pdf', filename="stress_report.pdf")
 
-    doc.build(content)
 
-    return FileResponse(file_path, media_type="application/pdf", filename="Stress_Report.pdf")
+###################
+# @app.get("/export-pdf")
+# def export_pdf(user=Depends(get_current_user), db: Session = Depends(get_db)):
+#     records = db.query(models.StressRecord)\
+#         .filter(models.StressRecord.user_id == user.id)\
+#         .order_by(models.StressRecord.created_at.desc())\
+#         .all()
 
+#     file_path = f"report_user_{user.id}.pdf"
+
+#     doc = SimpleDocTemplate(file_path)
+#     styles = getSampleStyleSheet()
+
+#     content = []
+
+#     # 🔥 Title
+#     content.append(Paragraph("Stress Analysis Report", styles["Title"]))
+#     content.append(Spacer(1, 10))
+
+#     # 🔥 User Info
+#     content.append(Paragraph(f"Name: {user.name}", styles["Normal"]))
+#     content.append(Paragraph(f"Email: {user.email}", styles["Normal"]))
+#     content.append(Spacer(1, 10))
+
+#     # 🔥 Summary
+#     total = len(records)
+#     high = len([r for r in records if r.predicted_stress == "High"])
+#     content.append(Paragraph(f"Total Records: {total}", styles["Normal"]))
+#     content.append(Paragraph(f"High Stress Count: {high}", styles["Normal"]))
+#     content.append(Spacer(1, 20))
+
+#     # 🔥 Table Data
+#     data = [["Date", "Type", "Stress", "Emotion"]]
+
+#     for r in records:
+#         data.append([
+#             str(r.created_at),
+#             r.source,
+#             r.predicted_stress,
+#             r.emotion if r.emotion else "-"
+#         ])
+
+#     table = Table(data)
+
+#     table.setStyle(TableStyle([
+#         ("BACKGROUND", (0,0), (-1,0), colors.grey),
+#         ("TEXTCOLOR", (0,0), (-1,0), colors.white),
+#         ("GRID", (0,0), (-1,-1), 1, colors.black),
+#         ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+#     ]))
+
+#     content.append(table)
+
+#     doc.build(content)
+
+#     return FileResponse(file_path, media_type="application/pdf", filename="Stress_Report.pdf")
 
 
 
