@@ -269,6 +269,12 @@ function History() {
             <button className="btn btn-outline" onClick={() => navigate("/dashboard")}>
               ← Back to Dashboard
             </button>
+            <button
+              className="btn btn-primary"
+              style={{ marginBottom: "20px" }}
+              onClick={() => window.open("https://stress-web.onrender.com/export-pdf", "_blank")}>
+              📄 Download Report
+            </button>
           </header>
 
           {/* Records */}
