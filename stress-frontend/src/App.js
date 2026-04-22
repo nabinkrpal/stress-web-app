@@ -37,6 +37,12 @@ function App() {
             isAuthenticated ? <Navigate to="/dashboard" /> : <Register />
           }
         />
+        <Route
+          path="/terms"
+          element={
+            isAuthenticated ? <Navigate to="/dashboard" /> : <Terms />
+          }          
+        />
 
         {/* Protected Routes */}
 
