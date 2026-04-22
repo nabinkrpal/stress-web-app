@@ -206,7 +206,7 @@ function Login() {
             <button className="auth-link" onClick={() => navigate("/register")}>Create one</button>
           </p>
           <p className="auth-footer">
-               <button className="btn-link" onClick={() => navigate("/terms")}>Terms & Conditions</button>
+               <button className="auth-link" onClick={() => navigate("/terms")}>Terms & Conditions</button>
           </p>
         </div>
       </div>
