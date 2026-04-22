@@ -461,7 +461,7 @@ function Dashboard() {
 
               {cameraOn && (
                 <button className="btn btn-primary" style={{ marginTop: 14 }} onClick={captureImage}>
-                  {loading ? "Detecting…" : "🔍 Detect Stress Now"}                  
+                  {loading ? "Detecting…" : "🔍 Detect Stress Now 1"}                  
                 </button>
               )}
 
