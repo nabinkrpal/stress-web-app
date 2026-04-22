@@ -1,8 +1,268 @@
+// import { useState, useEffect, useRef } from "react";
+// import API from "../services/api";
+// import { useNavigate } from "react-router-dom";
+
+// /* ── Inline styles & keyframes injected once ── */
+
+
+// function Dashboard() {
+//   const navigate = useNavigate();
+//   const videoRef = useRef(null);
+//   const canvasRef = useRef(null);
+//   const streamRef = useRef(null);
+
+//   const [formData, setFormData] = useState({
+//     sleep_hours: "", study_hours: "", screen_time: "",
+//     attendance: "", deadline_pressure: "",
+//   });
+
+//   const [result, setResult] = useState(null);
+//   const [webcamResult, setWebcamResult] = useState(null);
+//   const [loading, setLoading] = useState(false);
+//   const [cameraOn, setCameraOn] = useState(false);
+//   const [stats, setStats] = useState({ total: 0, high: 0, avgSleep: 0 });
+
+//   useEffect(() => { loadStats(); }, []);
+
+//   const loadStats = async () => {
+//     try {
+//       const res = await API.get("/history");
+//       const records = res.data;
+//       const highCount = records.filter(r => r.predicted_stress === "High").length;
+//       const formRecords = records.filter(r => r.type === "form");
+//       const avgSleep = formRecords.reduce((a, b) => a + (b.sleep_hours || 0), 0) / (formRecords.length || 1);
+//       setStats({ total: records.length, high: highCount, avgSleep: avgSleep.toFixed(1) });
+//     } catch { console.log("Stats load error"); }
+//   };
+
+//   useEffect(() => () => stopCamera(), []);
+
+//   useEffect(() => {
+//     const handleVisibility = () => { if (document.hidden) stopCamera(); };
+//     document.addEventListener("visibilitychange", handleVisibility);
+//     return () => document.removeEventListener("visibilitychange", handleVisibility);
+//   }, []);
+
+//   const handleChange = e => setFormData({ ...formData, [e.target.name]: Number(e.target.value) });
+
+//   const handlePredict = async e => {
+//     e.preventDefault();
+//     setLoading(true);
+//     try {
+//       const res = await API.post("/predict", formData);
+//       setResult(res.data);
+//       loadStats();
+//     } catch { alert("Prediction failed"); }
+//     setLoading(false);
+//   };
+
+//   const getSuggestion = stress => {
+//     if (stress === "High") return "Reduce screen time & prioritise sleep tonight.";
+//     if (stress === "Medium") return "Balance your study sessions with short breaks.";
+//     return "You're doing great — keep up the routine!";
+//   };
+
+//   const startCamera = async () => {
+//     try {
+//       stopCamera();
+//       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+//       streamRef.current = stream;
+//       if (videoRef.current) videoRef.current.srcObject = stream;
+//       setCameraOn(true);
+//     } catch { alert("Camera access denied or not supported"); }
+//   };
+
+//   const stopCamera = () => {
+//     if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
+//     if (videoRef.current) videoRef.current.srcObject = null;
+//     setCameraOn(false);
+//   };
+
+//   const captureImage = async () => {
+//     const canvas = canvasRef.current;
+//     const video = videoRef.current;
+//     canvas.width = video.videoWidth;
+//     canvas.height = video.videoHeight;
+//     canvas.getContext("2d").drawImage(video, 0, 0);
+//     canvas.toBlob(async blob => {
+//       const fd = new FormData();
+//       fd.append("file", blob, "capture.jpg");
+//       try {
+//         const res = await API.post("/webcam-stress", fd, { headers: { "Content-Type": "multipart/form-data" } });
+//         setWebcamResult(res.data);
+//         loadStats();
+//       } catch { alert("Webcam detection failed"); }
+//     });
+//   };
+
+//   const handleLogout = () => { stopCamera(); localStorage.removeItem("token"); navigate("/"); };
+//   const handleDeactivate = async () => {
+//     if (!window.confirm("Permanently deactivate your account?")) return;
+//     await API.delete("/deactivate-account");
+//     localStorage.removeItem("token");
+//     navigate("/");
+//   };
+
+//   const stressClass = s => s === "Low" ? "low" : s === "Medium" ? "medium" : "high";
+
+//   return (
+//     <>
+//       <style>{STYLES}</style>
+
+//       <div className="dash-root">
+//         <div className="dash-inner">
+
+//           {/* ── Header ── */}
+//           <header className="dash-header">
+//             <div className="dash-logo">Stress<span>sens</span></div>
+
+//             <div className="header-actions">
+//               <button className="btn btn-outline" onClick={() => navigate("/about-feedback")}>
+//                 ℹ️ About & Feedback
+//               </button>
+//               <button className="btn btn-outline" onClick={() => navigate("/reset-password")}>
+//                 🔑 Reset Password
+//               </button>
+//               <button className="btn btn-danger" onClick={handleLogout}>
+//                 ← Logout
+//               </button>
+//             </div>
+//           </header>
+
+//           {/* ── Stats ── */}
+//           <div className="stats-grid">
+//             <div className="glass stat-card">
+//               <p className="stat-label">Total Checks</p>
+//               <p className="stat-value accent">{stats.total}</p>
+//             </div>
+//             <div className="glass stat-card">
+//               <p className="stat-label">High Stress Events</p>
+//               <p className="stat-value danger">{stats.high}</p>
+//             </div>
+//             <div className="glass stat-card">
+//               <p className="stat-label">Avg Sleep (hrs)</p>
+//               <p className="stat-value">{stats.avgSleep}</p>
+//             </div>
+//           </div>
+
+//           {/* ── Main grid ── */}
+//           <div className="main-grid">
+
+//             {/* Form */}
+//             <div className="glass form-card">
+//               <p className="section-title"><span className="dot"></span>Manual Prediction</p>
+//               <div className="divider"></div>
+
+//               <form onSubmit={handlePredict}>
+//                 {[
+//                   { name: "sleep_hours",      label: "Sleep Hours" },
+//                   { name: "study_hours",      label: "Study Hours" },
+//                   { name: "screen_time",      label: "Screen Time (hrs)" },
+//                   { name: "attendance",       label: "Attendance %" },
+//                   { name: "deadline_pressure",label: "Deadline Pressure (1–3)" },
+//                 ].map(f => (
+//                   <div className="input-group" key={f.name}>
+//                     <label className="input-label">{f.label}</label>
+//                     <input
+//                       className="dash-input"
+//                       name={f.name}
+//                       placeholder={`Enter ${f.label.toLowerCase()}`}
+//                       onChange={handleChange}
+//                       type="number"
+//                     />
+//                   </div>
+//                 ))}
+
+//                 <button type="submit" className="btn btn-primary" style={{ marginTop: 8 }}>
+//                   {loading ? "Analysing…" : "⚡ Predict Stress Level"}
+//                 </button>
+//               </form>
+
+//               {result && (
+//                 <div className="result-box">
+//                   <p className={`result-level ${stressClass(result.predicted_stress)}`}>
+//                     {result.predicted_stress} Stress
+//                   </p>
+//                   <p className="result-hint">{getSuggestion(result.predicted_stress)}</p>
+//                 </div>
+//               )}
+//             </div>
+
+//             {/* Webcam */}
+//             <div className="glass webcam-card">
+//               <p className="section-title">
+//                 <span className="dot" style={{ background: cameraOn ? "var(--green)" : "var(--accent)", boxShadow: cameraOn ? "0 0 10px var(--green)" : "0 0 10px var(--accent)" }}></span>
+//                 Webcam Detection
+//                 {cameraOn && <span className="pulse-dot" style={{ marginLeft: "auto" }}></span>}
+//               </p>
+//               <div className="divider"></div>
+
+//               {!cameraOn ? (
+//                 <button className="btn btn-green" onClick={startCamera}>
+//                   📷 Start Camera
+//                 </button>
+//               ) : (
+//                 <button className="btn btn-red-full" onClick={stopCamera}>
+//                   ■ Stop Camera
+//                 </button>
+//               )}
+
+//               <video ref={videoRef} autoPlay playsInline className="video-frame" />
+//               <canvas ref={canvasRef} style={{ display: "none" }} />
+
+//               {cameraOn && (
+//                 <button className="btn btn-primary" style={{ marginTop: 14 }} onClick={captureImage}>
+//                   {loading ? "Detecting…" : "🔍 Detect Stress Now 1"}                  
+//                 </button>
+//               )}
+
+//               {webcamResult && (
+//                 <div className="result-box">
+//                   <p style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 2, color: "var(--text-muted)", marginBottom: 6 }}>
+//                     Detected Emotion
+//                   </p>
+//                   <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 700, marginBottom: 10 }}>
+//                     {webcamResult.emotion}
+//                   </p>
+//                   <p className={`result-level ${stressClass(webcamResult.predicted_stress)}`}>
+//                     {webcamResult.predicted_stress} Stress
+//                   </p>
+//                 </div>
+//               )}
+//             </div>
+//           </div>
+
+//           {/* ── Footer row ── */}
+//           <div className="footer-row">
+//             <button className="btn-link" onClick={() => navigate("/history")}>
+//               View History
+//               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+//                 <path d="M5 12h14M12 5l7 7-7 7"/>
+//               </svg>
+//             </button>
+//             <button className="btn-link" onClick={() => navigate("/terms")}>
+//               Terms & Conditions
+//             </button>
+
+//             <button className="btn btn-danger" onClick={handleDeactivate} style={{ padding: "10px 20px", fontSize: 13 }}>
+//               🗑 Deactivate Account
+//             </button>
+//           </div>
+
+//         </div>
+//       </div>
+//     </>
+//   );
+// }
+
+// export default Dashboard;
+
 import { useState, useEffect, useRef } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
 
-/* ── Inline styles & keyframes injected once ── */
+/* ── Styles unchanged ── */
+// const STYLES = `...YOUR SAME STYLES HERE (NO CHANGE)...`;
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
@@ -267,7 +527,10 @@ function Dashboard() {
 
   const [result, setResult] = useState(null);
   const [webcamResult, setWebcamResult] = useState(null);
-  const [loading, setLoading] = useState(false);
+
+  const [loading, setLoading] = useState(false); // form loading
+  const [webcamLoading, setWebcamLoading] = useState(false); // 🔥 NEW
+
   const [cameraOn, setCameraOn] = useState(false);
   const [stats, setStats] = useState({ total: 0, high: 0, avgSleep: 0 });
 
@@ -277,11 +540,20 @@ function Dashboard() {
     try {
       const res = await API.get("/history");
       const records = res.data;
+
       const highCount = records.filter(r => r.predicted_stress === "High").length;
       const formRecords = records.filter(r => r.type === "form");
+
       const avgSleep = formRecords.reduce((a, b) => a + (b.sleep_hours || 0), 0) / (formRecords.length || 1);
-      setStats({ total: records.length, high: highCount, avgSleep: avgSleep.toFixed(1) });
-    } catch { console.log("Stats load error"); }
+
+      setStats({
+        total: records.length,
+        high: highCount,
+        avgSleep: avgSleep.toFixed(1)
+      });
+    } catch {
+      console.log("Stats load error");
+    }
   };
 
   useEffect(() => () => stopCamera(), []);
@@ -292,7 +564,8 @@ function Dashboard() {
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
-  const handleChange = e => setFormData({ ...formData, [e.target.name]: Number(e.target.value) });
+  const handleChange = e =>
+    setFormData({ ...formData, [e.target.name]: Number(e.target.value) });
 
   const handlePredict = async e => {
     e.preventDefault();
@@ -301,7 +574,9 @@ function Dashboard() {
       const res = await API.post("/predict", formData);
       setResult(res.data);
       loadStats();
-    } catch { alert("Prediction failed"); }
+    } catch {
+      alert("Prediction failed");
+    }
     setLoading(false);
   };
 
@@ -314,37 +589,67 @@ function Dashboard() {
   const startCamera = async () => {
     try {
       stopCamera();
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+        audio: false
+      });
+
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
+
       setCameraOn(true);
-    } catch { alert("Camera access denied or not supported"); }
+    } catch {
+      alert("Camera access denied");
+    }
   };
 
   const stopCamera = () => {
-    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
     if (videoRef.current) videoRef.current.srcObject = null;
     setCameraOn(false);
   };
 
+  // 🔥 FIXED FUNCTION
   const captureImage = async () => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
+
+    if (!video || !canvas) return;
+
+    setWebcamLoading(true);
+
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0);
-    canvas.toBlob(async blob => {
+
+    canvas.toBlob(async (blob) => {
       const fd = new FormData();
       fd.append("file", blob, "capture.jpg");
+
       try {
-        const res = await API.post("/webcam-stress", fd, { headers: { "Content-Type": "multipart/form-data" } });
+        const res = await API.post("/webcam-stress", fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
         setWebcamResult(res.data);
         loadStats();
-      } catch { alert("Webcam detection failed"); }
+      } catch {
+        alert("Webcam detection failed");
+      } finally {
+        setWebcamLoading(false);
+      }
     });
   };
 
-  const handleLogout = () => { stopCamera(); localStorage.removeItem("token"); navigate("/"); };
+  const handleLogout = () => {
+    stopCamera();
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
   const handleDeactivate = async () => {
     if (!window.confirm("Permanently deactivate your account?")) return;
     await API.delete("/deactivate-account");
@@ -352,7 +657,8 @@ function Dashboard() {
     navigate("/");
   };
 
-  const stressClass = s => s === "Low" ? "low" : s === "Medium" ? "medium" : "high";
+  const stressClass = s =>
+    s === "Low" ? "low" : s === "Medium" ? "medium" : "high";
 
   return (
     <>
@@ -361,7 +667,7 @@ function Dashboard() {
       <div className="dash-root">
         <div className="dash-inner">
 
-          {/* ── Header ── */}
+          {/* Header */}
           <header className="dash-header">
             <div className="dash-logo">Stress<span>sens</span></div>
 
@@ -378,7 +684,7 @@ function Dashboard() {
             </div>
           </header>
 
-          {/* ── Stats ── */}
+          {/* Stats */}
           <div className="stats-grid">
             <div className="glass stat-card">
               <p className="stat-label">Total Checks</p>
@@ -394,7 +700,6 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* ── Main grid ── */}
           <div className="main-grid">
 
             {/* Form */}
@@ -403,26 +708,14 @@ function Dashboard() {
               <div className="divider"></div>
 
               <form onSubmit={handlePredict}>
-                {[
-                  { name: "sleep_hours",      label: "Sleep Hours" },
-                  { name: "study_hours",      label: "Study Hours" },
-                  { name: "screen_time",      label: "Screen Time (hrs)" },
-                  { name: "attendance",       label: "Attendance %" },
-                  { name: "deadline_pressure",label: "Deadline Pressure (1–3)" },
-                ].map(f => (
-                  <div className="input-group" key={f.name}>
-                    <label className="input-label">{f.label}</label>
-                    <input
-                      className="dash-input"
-                      name={f.name}
-                      placeholder={`Enter ${f.label.toLowerCase()}`}
-                      onChange={handleChange}
-                      type="number"
-                    />
+                {["sleep_hours","study_hours","screen_time","attendance","deadline_pressure"].map(name => (
+                  <div className="input-group" key={name}>
+                    <label className="input-label">{name.replace("_"," ")}</label>
+                    <input className="dash-input" name={name} type="number" onChange={handleChange}/>
                   </div>
                 ))}
 
-                <button type="submit" className="btn btn-primary" style={{ marginTop: 8 }}>
+                <button type="submit" className="btn btn-primary">
                   {loading ? "Analysing…" : "⚡ Predict Stress Level"}
                 </button>
               </form>
@@ -439,11 +732,7 @@ function Dashboard() {
 
             {/* Webcam */}
             <div className="glass webcam-card">
-              <p className="section-title">
-                <span className="dot" style={{ background: cameraOn ? "var(--green)" : "var(--accent)", boxShadow: cameraOn ? "0 0 10px var(--green)" : "0 0 10px var(--accent)" }}></span>
-                Webcam Detection
-                {cameraOn && <span className="pulse-dot" style={{ marginLeft: "auto" }}></span>}
-              </p>
+              <p className="section-title">Webcam Detection</p>
               <div className="divider"></div>
 
               {!cameraOn ? (
@@ -456,46 +745,35 @@ function Dashboard() {
                 </button>
               )}
 
-              <video ref={videoRef} autoPlay playsInline className="video-frame" />
-              <canvas ref={canvasRef} style={{ display: "none" }} />
+              <video ref={videoRef} autoPlay className="video-frame"/>
+              <canvas ref={canvasRef} style={{ display: "none" }}/>
 
               {cameraOn && (
-                <button className="btn btn-primary" style={{ marginTop: 14 }} onClick={captureImage}>
-                  {loading ? "Detecting…" : "🔍 Detect Stress Now 1"}                  
+                <button
+                  className="btn btn-primary"
+                  style={{ marginTop: 14 }}
+                  onClick={captureImage}
+                  disabled={webcamLoading}
+                >
+                  {webcamLoading ? "Detecting…" : "🔍 Detect Stress Now"}
                 </button>
+              )}
+
+              {webcamLoading && (
+                <p style={{ fontSize: 12, marginTop: 8, color: "#aaa" }}>
+                  Processing image...
+                </p>
               )}
 
               {webcamResult && (
                 <div className="result-box">
-                  <p style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 2, color: "var(--text-muted)", marginBottom: 6 }}>
-                    Detected Emotion
-                  </p>
-                  <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 700, marginBottom: 10 }}>
-                    {webcamResult.emotion}
-                  </p>
+                  <p>{webcamResult.emotion}</p>
                   <p className={`result-level ${stressClass(webcamResult.predicted_stress)}`}>
-                    {webcamResult.predicted_stress} Stress
+                    {webcamResult.predicted_stress}
                   </p>
                 </div>
               )}
             </div>
-          </div>
-
-          {/* ── Footer row ── */}
-          <div className="footer-row">
-            <button className="btn-link" onClick={() => navigate("/history")}>
-              View History
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </button>
-            <button className="btn-link" onClick={() => navigate("/terms")}>
-              Terms & Conditions
-            </button>
-
-            <button className="btn btn-danger" onClick={handleDeactivate} style={{ padding: "10px 20px", fontSize: 13 }}>
-              🗑 Deactivate Account
-            </button>
           </div>
 
         </div>
