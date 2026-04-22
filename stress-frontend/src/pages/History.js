@@ -370,8 +370,8 @@ function History() {
               },
             }} />
           </div>
-          <button onClick={exportPDF} className="btn btn-primary">
-            📄 Export Report
+          <button className="btn btn-outline" onClick={exportPDF} className="btn btn-primary">
+            📄 Download Report
           </button>
         </div>
       </div>
