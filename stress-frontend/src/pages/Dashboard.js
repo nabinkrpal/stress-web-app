@@ -775,6 +775,23 @@ function Dashboard() {
               )}
             </div>
           </div>
+          <div className="footer-row">
+            <button className="btn-link" onClick={() => navigate("/history")}>
+              View History →
+            </button>
+          
+            <button className="btn-link" onClick={() => navigate("/terms")}>
+              Terms & Conditions
+            </button>
+          
+            <button
+              className="btn btn-danger"
+              onClick={handleDeactivate}
+              style={{ padding: "10px 20px", fontSize: 13 }}
+            >
+              🗑 Deactivate Account
+            </button>
+          </div>
 
         </div>
       </div>
