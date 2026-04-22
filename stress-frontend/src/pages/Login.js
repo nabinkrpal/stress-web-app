@@ -205,6 +205,7 @@ function Login() {
             Don't have an account?{" "}
             <button className="auth-link" onClick={() => navigate("/register")}>Create one</button>            
           </p>
+          <br>
           <button className="btn-link" onClick={() => navigate("/terms")}>Terms & Conditions</button>
         </div>
       </div>
