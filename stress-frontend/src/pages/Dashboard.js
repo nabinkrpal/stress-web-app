@@ -413,9 +413,11 @@ function Dashboard() {
             <div className="dash-logo">Stress<span>sens</span></div>
 
             <div className="header-actions">
-              <button className="btn btn-outline" onClick={() => navigate("/admin")}>
-                🛠 Admin
-              </button>
+              {isAdmin && (
+                <button className="btn btn-outline" onClick={() => navigate("/admin")}>
+                  🛠 Admin Panel
+                </button>
+              )}
               <button className="btn btn-outline" onClick={() => navigate("/about-feedback")}>
                 ℹ️ About & Feedback
               </button>
