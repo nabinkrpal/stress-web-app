@@ -211,6 +211,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     return user
+######    
+def admin_required(user: models.User):
+    if not user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin only")
 
 # ================= ROUTES =================
 @app.get("/")
@@ -581,7 +585,95 @@ def export_pdf(user=Depends(get_current_user), db: Session = Depends(get_db)):
     # 📤 Return file
     return FileResponse(file_path, media_type='application/pdf', filename="stress_report.pdf")
 
+################
+@app.get("/me")
+def get_me(current_user: models.User = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "name": current_user.name,
+        "email": current_user.email,
+        "is_admin": current_user.is_admin
+    }
 
+@app.get("/admin/users")
+def get_all_users(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    admin_required(current_user)
 
+    users = db.query(models.User).all()
 
+    return [
+        {
+            "id": u.id,
+            "name": u.name,
+            "email": u.email,
+            "is_admin": u.is_admin,
+            "is_verified": u.is_verified
+        }
+        for u in users
+    ]
 
+@app.get("/admin/stress-records")
+def get_all_records(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    admin_required(current_user)
+
+    records = db.query(models.StressRecord)\
+        .order_by(models.StressRecord.created_at.desc())\
+        .all()
+
+    return [
+        {
+            "id": r.id,
+            "user_id": r.user_id,
+            "stress": r.predicted_stress,
+            "source": r.source,
+            "emotion": r.emotion,
+            "image": r.image_path,
+            "created_at": r.created_at
+        }
+        for r in records
+    ]
+
+@app.delete("/admin/delete-user/{user_id}")
+def delete_user(
+    user_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    admin_required(current_user)
+
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    db.delete(user)
+    db.commit()
+
+    return {"message": "User deleted"}
+
+@app.get("/admin/feedbacks")
+def get_feedbacks(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    admin_required(current_user)
+
+    feedbacks = db.query(models.Feedback)\
+        .order_by(models.Feedback.id.desc())\
+        .all()
+
+    return [
+        {
+            "id": f.id,
+            "user_id": f.user_id,
+            "name": f.name,
+            "message": f.message
+        }
+        for f in feedbacks
+    ]
