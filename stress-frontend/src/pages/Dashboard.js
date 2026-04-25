@@ -274,8 +274,22 @@ function Dashboard() {
 
   const [cameraOn, setCameraOn] = useState(false);
   const [stats, setStats] = useState({ total: 0, high: 0, avgSleep: 0 });
-
-  useEffect(() => { loadStats(); }, []);
+  ////////////////
+  const [isAdmin, setIsAdmin] = useState(false);
+  ///////////////
+  useEffect(() => {
+    loadStats();
+    fetchUser();
+  }, []);
+  ///////
+  const fetchUser = async () => {
+    try {
+      const res = await API.get("/me");
+      setIsAdmin(res.data.is_admin);
+    } catch {
+      console.log("Failed to fetch user");
+    }
+  };
 
   const loadStats = async () => {
     try {
