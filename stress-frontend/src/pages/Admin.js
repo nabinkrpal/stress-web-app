@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+// import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
 
@@ -81,23 +82,25 @@ const STYLES = `
   }
 `;
 
-function AdminPage() {
+function Admin() {
   const navigate = useNavigate();
 
   const [users, setUsers] = useState([]);
   const [records, setRecords] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
 
+  // useEffect(() => {
+  //   fetchAll();
+  // }, []);
   useEffect(() => {
     fetchAll();
-  }, []);
-
-  const fetchAll = async () => {
+  }, [fetchAll]);
+  const fetchAll = useCallback(async () => {
     try {
       const u = await API.get("/admin/users");
       const r = await API.get("/admin/stress-records");
       const f = await API.get("/admin/feedbacks");
-
+  
       setUsers(u.data);
       setRecords(r.data);
       setFeedbacks(f.data);
@@ -105,6 +108,20 @@ function AdminPage() {
       alert("Admin access denied");
       navigate("/dashboard");
     }
+  }, [navigate]);
+  // const fetchAll = async () => {
+  //   try {
+  //     const u = await API.get("/admin/users");
+  //     const r = await API.get("/admin/stress-records");
+  //     const f = await API.get("/admin/feedbacks");
+
+  //     setUsers(u.data);
+  //     setRecords(r.data);
+  //     setFeedbacks(f.data);
+  //   } catch (err) {
+  //     alert("Admin access denied");
+  //     navigate("/dashboard");
+  //   }
   };
 
   const deleteUser = async (id) => {
