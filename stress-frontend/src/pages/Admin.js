@@ -582,6 +582,20 @@ function Admin() {
             </PieChart>
           </div>
 
+          {/* Line Chart */}
+          <div className="chart-card" style={{ gridColumn: "span 2" }}>
+            <h3>Stress Trend</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={timelineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="stress" stroke="#ef4444" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
           {/* Bar */}
           <div className="admin-card">
             <h4>Source Analysis</h4>
