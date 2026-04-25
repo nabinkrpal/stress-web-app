@@ -213,4 +213,4 @@ function Admin() {
   );
 }
 
-export default AdminPage;
+export default Admin;
