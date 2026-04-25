@@ -550,6 +550,16 @@ def export_pdf(user=Depends(get_current_user), db: Session = Depends(get_db)):
             styles['Normal']
         )
     )
+    # utc_now = datetime.utcnow().replace(tzinfo=ZoneInfo("UTC"))
+    # ist_time = utc_now.astimezone(ZoneInfo("Asia/Kolkata"))
+    
+    # elements.append(
+    #     Paragraph(
+    #         f"Generated on: {ist_time.strftime('%Y-%m-%d %I:%M %p IST')}",
+    #         styles['Normal']
+    #     )
+    # )
+    
     elements.append(Spacer(1, 12))
 
     # 📊 Summary
