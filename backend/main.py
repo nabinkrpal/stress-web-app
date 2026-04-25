@@ -80,7 +80,8 @@ app.add_middleware(
 )
 
 # ================= CONFIG =================
-SECRET_KEY = "your_secret_key_here"
+# SECRET_KEY = "your_secret_key_here"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
