@@ -229,7 +229,7 @@
 //   );
 // }
 
-export default Admin;
+// export default Admin;
 
 import { useState, useEffect, useCallback } from "react";
 import API from "../services/api";
