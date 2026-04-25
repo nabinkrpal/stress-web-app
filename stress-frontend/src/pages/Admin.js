@@ -3,7 +3,8 @@ import API from "../services/api";
 import { useNavigate } from "react-router-dom";
 import {
   PieChart, Pie, Cell, Tooltip,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  LineChart, Line, ResponsiveContainer
 } from "recharts";
 
 const COLORS = ["#22c55e", "#f59e0b", "#ef4444"];
@@ -111,6 +112,10 @@ const STYLES = `
     flex-wrap: wrap;
     justify-content: space-between;
   }
+  .admin-card {
+    flex: 1;
+    min-width: 280px;
+  }
 `;
 
 function Admin() {
@@ -161,6 +166,15 @@ function Admin() {
     { name: "Form", value: records.filter(r => r.source === "form").length },
     { name: "Webcam", value: records.filter(r => r.source === "webcam").length },
   ];
+  const timelineData = records
+    .slice()
+    .reverse()
+    .map(r => ({
+      date: new Date(r.created_at).toLocaleDateString(),
+      stress:
+        r.stress === "Low" ? 1 :
+        r.stress === "Medium" ? 2 : 3
+    }));
 
   return (
     <>
@@ -194,6 +208,37 @@ function Admin() {
               </Pie>
               <Tooltip />
             </PieChart>
+          </div>
+                                
+          {/* Line Chart */}
+          <div className="admin-card" style={{ width: "100%" }}>
+            <h4>Stress Trend</h4>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={timelineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                
+                <YAxis
+                  ticks={[1, 2, 3]}
+                  tickFormatter={(v) =>
+                    v === 1 ? "Low" : v === 2 ? "Medium" : "High"
+                  }
+                />
+          
+                <Tooltip
+                  formatter={(v) =>
+                    v === 1 ? "Low" : v === 2 ? "Medium" : "High"
+                  }
+                />
+          
+                <Line
+                  type="monotone"
+                  dataKey="stress"
+                  stroke="#ef4444"
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
 
           {/* Bar */}
