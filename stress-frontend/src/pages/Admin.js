@@ -583,7 +583,7 @@ function Admin() {
           </div>
 
           {/* Line Chart */}
-          <div className="chart-card" style={{ gridColumn: "span 2" }}>
+          <div className="admin-card">
             <h3>Stress Trend</h3>
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={timelineData}>
