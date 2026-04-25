@@ -96,7 +96,7 @@ function Terms() {
           <div className="terms-header">
             <div className="terms-logo">Stress<span>Sens</span></div>
             <button className="btn-outline" onClick={() => navigate("/dashboard")}>
-              ← Dashboard
+              ← Back
             </button>
           </div>
 
