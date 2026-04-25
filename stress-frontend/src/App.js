@@ -9,7 +9,7 @@ import ResetPassword from "./pages/ResetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AboutFeedback from "./pages/AboutFeedback";
 import Terms from "./pages/Terms";
-
+import Admin from "./pages/Admin";
 
 
 function App() {
@@ -77,6 +77,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Terms />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <Admin />
             </ProtectedRoute>
           }
         />
