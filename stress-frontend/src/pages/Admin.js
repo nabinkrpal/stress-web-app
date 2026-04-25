@@ -89,41 +89,23 @@ function Admin() {
   const [records, setRecords] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
 
-  // useEffect(() => {
-  //   fetchAll();
-  // }, []);
+  const fetchAll = useCallback(async () => {
+    try {
+      const res = await API.get("/admin/all-data");
+      setUsers(res.data.users);
+      setRecords(res.data.records);
+      setFeedbacks(res.data.feedbacks);
+    } catch (err) {
+      console.log("Admin fetch error", err);
+    }
+  }, []);
+  
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
-  const fetchAll = useCallback(async () => {
-    try {
-      const u = await API.get("/admin/users");
-      const r = await API.get("/admin/stress-records");
-      const f = await API.get("/admin/feedbacks");
+
+
   
-      setUsers(u.data);
-      setRecords(r.data);
-      setFeedbacks(f.data);
-    } catch (err) {
-      alert("Admin access denied");
-      navigate("/dashboard");
-    }
-  }, [navigate]);
-  // const fetchAll = async () => {
-  //   try {
-  //     const u = await API.get("/admin/users");
-  //     const r = await API.get("/admin/stress-records");
-  //     const f = await API.get("/admin/feedbacks");
-
-  //     setUsers(u.data);
-  //     setRecords(r.data);
-  //     setFeedbacks(f.data);
-  //   } catch (err) {
-  //     alert("Admin access denied");
-  //     navigate("/dashboard");
-  //   }
-  };
-
   const deleteUser = async (id) => {
     if (!window.confirm("Delete this user?")) return;
 
