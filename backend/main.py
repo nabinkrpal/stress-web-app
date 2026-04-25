@@ -14,6 +14,7 @@ import joblib
 import pandas as pd
 import numpy as np
 import cv2
+from zoneinfo import ZoneInfo
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -540,7 +541,14 @@ def export_pdf(user=Depends(get_current_user), db: Session = Depends(get_db)):
     # 👤 User Info
     elements.append(Paragraph(f"User: {user.name}", styles['Normal']))
     elements.append(Paragraph(f"Email: {user.email}", styles['Normal']))
-    elements.append(Paragraph(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M')}", styles['Normal']))
+    
+    current_time = datetime.now(ZoneInfo("Asia/Kolkata"))
+    elements.append(
+        Paragraph(
+            f"Generated on: {current_time.strftime('%Y-%m-%d %I:%M %p IST')}",
+            styles['Normal']
+        )
+    )
     elements.append(Spacer(1, 12))
 
     # 📊 Summary
