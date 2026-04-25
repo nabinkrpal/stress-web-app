@@ -89,14 +89,30 @@ function Admin() {
   const [records, setRecords] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
 
+  // const fetchAll = useCallback(async () => {
+  //   try {
+  //     const res = await API.get("/admin/all-data");
+  //     setUsers(res.data.users);
+  //     setRecords(res.data.records);
+  //     setFeedbacks(res.data.feedbacks);
+  //   } catch (err) {
+  //     console.log("Admin fetch error", err);
+  //   }
+  // }, []);
   const fetchAll = useCallback(async () => {
     try {
-      const res = await API.get("/admin/all-data");
-      setUsers(res.data.users);
-      setRecords(res.data.records);
-      setFeedbacks(res.data.feedbacks);
+      const [usersRes, recordsRes, feedbackRes] = await Promise.all([
+        API.get("/admin/users"),
+        API.get("/admin/stress-records"),
+        API.get("/admin/feedbacks"),
+      ]);
+  
+      setUsers(usersRes.data);
+      setRecords(recordsRes.data);
+      setFeedbacks(feedbackRes.data);
+  
     } catch (err) {
-      console.log("Admin fetch error", err);
+      console.log("Admin fetch error:", err);
     }
   }, []);
   
