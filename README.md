@@ -53,3 +53,13 @@ The project aims to provide a simple web-based system that can estimate a studen
 * Shows **stress distribution and stress trends over time** through charts.
 * Calculates lifestyle statistics such as **average sleep from manual predictions**.
 * Provides a complete authenticated web application that can be accessed through a deployed frontend and backend.
+  
+---
+
+## 🚀 Run Locally
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/nabinkrpal/stress-web-app.git
+cd stress-web-app
+
